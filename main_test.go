@@ -1,6 +1,9 @@
 package main
 
 import (
+	"encoding/json"
+	"io/ioutil"
+	"os"
 	"testing"
 
 	"github.com/kyrremann/unparsd/models"
@@ -82,4 +85,31 @@ func TestMain(t *testing.T) {
 	res = db.First(&v)
 	assert.NoError(t, res.Error)
 	assert.Equal(t, "Mad Fork", v.Name)
+}
+
+func TestParse(t *testing.T) {
+	jsonFile, err := os.Open("untappd.json")
+	assert.NoError(t, err)
+	defer jsonFile.Close()
+
+	byteValue, _ := ioutil.ReadAll(jsonFile)
+
+	var checkins []models.JSONCheckin
+	json.Unmarshal(byteValue, &checkins)
+
+	assert.Len(t, checkins, 100)
+
+	checkin := checkins[0]
+	testJsonImport(t, checkin)
+}
+
+func testJsonImport(t *testing.T, checkin models.JSONCheckin) {
+	assert.Equal(t, 1, checkin.TotalToasts)
+	assert.Equal(t, float32(3), checkin.RatingScore)
+	assert.Equal(t, 283107883, checkin.CheckinID)
+	assert.Equal(t, "Fin begynnerøl.", checkin.Comment)
+	assert.Equal(t, "1664", checkin.BeerName)
+	assert.Equal(t, 20, checkin.BeerIbu)
+	assert.Equal(t, "Kronenbourg Brewery", checkin.BreweryName)
+	assert.Equal(t, "Mad Fork", checkin.VenueName)
 }
