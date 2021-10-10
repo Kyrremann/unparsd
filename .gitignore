@@ -1,2 +1,3 @@
 gorm.db
 .vscode/
+.DS_Store
