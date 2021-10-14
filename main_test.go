@@ -13,7 +13,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func TestMain(t *testing.T) {
+func TestModels(t *testing.T) {
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	//db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
 	assert.NoError(t, err)
@@ -87,7 +87,7 @@ func TestMain(t *testing.T) {
 	assert.Equal(t, "Mad Fork", v.Name)
 }
 
-func TestParse(t *testing.T) {
+func TestJSONParse(t *testing.T) {
 	jsonFile, err := os.Open("untappd.json")
 	assert.NoError(t, err)
 	defer jsonFile.Close()
