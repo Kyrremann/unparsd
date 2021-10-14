@@ -1,21 +1,16 @@
 package main
 
 import (
-	"encoding/json"
-	"io/ioutil"
-	"os"
 	"testing"
 
 	"github.com/kyrremann/unparsd/models"
 
 	"github.com/stretchr/testify/assert"
-	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func TestModels(t *testing.T) {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
-	//db, err := gorm.Open(sqlite.Open("gorm.db"), &gorm.Config{})
+func TestOpenInMemoryDatabase(t *testing.T) {
+	db, err := OpenInMemoryDatabase()
 	assert.NoError(t, err)
 
 	db.AutoMigrate(&models.Brewery{}, &models.Beer{}, &models.Venue{}, &models.Checkin{})
@@ -60,10 +55,10 @@ func TestModels(t *testing.T) {
 	res := db.Create(&checkin)
 	assert.NoError(t, res.Error)
 
-	testDatabase(t, db)
+	testDatabaseModels(t, db)
 }
 
-func testDatabase(t *testing.T, db *gorm.DB) {
+func testDatabaseModels(t *testing.T, db *gorm.DB) {
 	var c models.Checkin
 	res := db.Preload("Venue").Preload("Beer.Brewery").First(&c, 283107883)
 	assert.NoError(t, res.Error)
@@ -91,15 +86,9 @@ func testDatabase(t *testing.T, db *gorm.DB) {
 	assert.Equal(t, "Mad Fork", v.Name)
 }
 
-func TestJSONParse(t *testing.T) {
-	jsonFile, err := os.Open("untappd.json")
+func TestParseJSON(t *testing.T) {
+	checkins, err := ParseJSON("untappd.json")
 	assert.NoError(t, err)
-	defer jsonFile.Close()
-
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-
-	var checkins []models.JSONCheckin
-	json.Unmarshal(byteValue, &checkins)
 
 	assert.Len(t, checkins, 100)
 
@@ -109,7 +98,7 @@ func TestJSONParse(t *testing.T) {
 
 func testJSONImport(t *testing.T, checkin models.JSONCheckin) {
 	assert.Equal(t, 1, checkin.TotalToasts)
-	assert.Equal(t, float32(3), checkin.RatingScore)
+	assert.Equal(t, "3", checkin.RatingScore)
 	assert.Equal(t, 283107883, checkin.CheckinID)
 	assert.Equal(t, "Fin begynnerøl.", checkin.Comment)
 	assert.Equal(t, "1664", checkin.BeerName)

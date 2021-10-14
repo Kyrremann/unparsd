@@ -23,8 +23,8 @@ type Checkin struct {
 }
 
 type JSONCheckin struct {
-	CheckinID                 int     `json:"checkin_id,string"`
-	RatingScore               float32 `json:"rating_score,string"`
+	CheckinID                 int    `json:"checkin_id,string"`
+	RatingScore               string `json:"rating_score"`
 	Comment                   string
 	CreatedAt                 string  `json:"created_at"`
 	FlavorProfiles            string  `json:"flavor_profiles"`
@@ -50,6 +50,6 @@ type JSONCheckin struct {
 	BeerType                  string  `json:"beer_type"`
 	BeerAbv                   float32 `json:"beer_abv,string"`
 	BeerIbu                   int     `json:"beer_ibu,string"`
-	GlobalWeightedRatingScore float32 `json:"global_weighted_rating_score,string"`
-	GlobalRatingScore         float32 `json:"global_rating_score,string"`
+	GlobalWeightedRatingScore float32 `json:"global_weighted_rating_score"`
+	GlobalRatingScore         float32 `json:"global_rating_score"`
 }

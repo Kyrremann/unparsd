@@ -2,50 +2,43 @@ package main
 
 import (
 	"encoding/json"
-	"fmt"
 	"io/ioutil"
-	"log"
 	"os"
 
 	"github.com/kyrremann/unparsd/models"
-
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
 )
 
-func main() {
+func main() {}
+
+func OpenInMemoryDatabase() (*gorm.DB, error) {
 	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
 	if err != nil {
-		log.Fatal(err)
-		return
+		return nil, err
 	}
 
 	db.AutoMigrate(&models.Brewery{}, &models.Beer{}, &models.Venue{}, &models.Checkin{})
+	return db, nil
+}
 
-	// Open our jsonFile
+func ParseJSON(file string) ([]models.JSONCheckin, error) {
 	jsonFile, err := os.Open("untappd.json")
-	// if we os.Open returns an error then handle it
 	if err != nil {
-		fmt.Println(err)
+		return nil, err
 	}
-	fmt.Println("Successfully Opened untappd.json")
-	// defer the closing of our jsonFile so that we can parse it later on
 	defer jsonFile.Close()
 
-	// read our opened jsonFile as a byte array.
-	byteValue, _ := ioutil.ReadAll(jsonFile)
-
-	// we initialize our Users array
-	var checkins []models.Checkin
-
-	// we unmarshal our byteArray which contains our
-	// jsonFile's content into 'checkins' which we defined above
-	json.Unmarshal(byteValue, &checkins)
-
-	for i, c := range checkins {
-		_, err = fmt.Printf("%d: %s", i, c.Beer.Name)
-		if err != nil {
-			fmt.Println(err)
-		}
+	byteValue, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return nil, err
 	}
+
+	var checkins []models.JSONCheckin
+	err = json.Unmarshal(byteValue, &checkins)
+	if err != nil {
+		return nil, err
+	}
+
+	return checkins, nil
 }
