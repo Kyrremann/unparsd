@@ -60,8 +60,12 @@ func TestModels(t *testing.T) {
 	res := db.Create(&checkin)
 	assert.NoError(t, res.Error)
 
+	testDatabase(t, db)
+}
+
+func testDatabase(t *testing.T, db *gorm.DB) {
 	var c models.Checkin
-	res = db.Preload("Venue").Preload("Beer.Brewery").First(&c, 283107883)
+	res := db.Preload("Venue").Preload("Beer.Brewery").First(&c, 283107883)
 	assert.NoError(t, res.Error)
 	assert.Equal(t, 283107883, c.ID)
 	assert.Equal(t, "1664", c.Beer.Name)
@@ -100,10 +104,10 @@ func TestJSONParse(t *testing.T) {
 	assert.Len(t, checkins, 100)
 
 	checkin := checkins[0]
-	testJsonImport(t, checkin)
+	testJSONImport(t, checkin)
 }
 
-func testJsonImport(t *testing.T, checkin models.JSONCheckin) {
+func testJSONImport(t *testing.T, checkin models.JSONCheckin) {
 	assert.Equal(t, 1, checkin.TotalToasts)
 	assert.Equal(t, float32(3), checkin.RatingScore)
 	assert.Equal(t, 283107883, checkin.CheckinID)
