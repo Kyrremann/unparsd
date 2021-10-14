@@ -78,7 +78,7 @@ func testDatabaseModels(t *testing.T, db *gorm.DB) {
 	res = db.Preload("Beers").Find(&brw, 203)
 	assert.NoError(t, res.Error)
 	assert.Equal(t, "Kronenbourg Brewery", brw.Name)
-	assert.Len(t, brw.Beers, 1)
+	assert.GreaterOrEqual(t, len(brw.Beers), 1)
 
 	var v models.Venue
 	res = db.First(&v)
@@ -105,4 +105,24 @@ func testJSONImport(t *testing.T, checkin models.JSONCheckin) {
 	assert.Equal(t, 20, checkin.BeerIbu)
 	assert.Equal(t, "Kronenbourg Brewery", checkin.BreweryName)
 	assert.Equal(t, "Mad Fork", checkin.VenueName)
+}
+
+func TestParseJSONIntoDatabase(t *testing.T) {
+	checkins, err := ParseJSON("untappd.json")
+	assert.NoError(t, err)
+	testJSONImport(t, checkins[0])
+
+	db, err := OpenInMemoryDatabase()
+	assert.NoError(t, err)
+
+	for _, jsonCheckin := range checkins {
+		err = InsertIntoDatabase(jsonCheckin, db)
+		assert.NoError(t, err)
+	}
+
+	var dbCheckins []models.Checkin
+	res := db.Find(&dbCheckins)
+	assert.NoError(t, res.Error)
+	assert.Equal(t, int64(100), res.RowsAffected)
+	testDatabaseModels(t, db)
 }
