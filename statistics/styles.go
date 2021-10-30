@@ -57,7 +57,6 @@ func MissingStyles(db *gorm.DB) ([]string, error) {
 
 func DistinctStyles(db *gorm.DB) ([]DistinctStyle, error) {
 	var styles []DistinctStyle
-
 	var distinctive []style
 	res := db.Model(&models.Beer{}).Select("Type, count(Type) as total").Group("Type").Find(&distinctive)
 	if res.Error != nil {
