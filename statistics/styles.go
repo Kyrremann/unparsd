@@ -1,8 +1,6 @@
 package statistics
 
 import (
-	"fmt"
-
 	"github.com/kyrremann/unparsd/models"
 	"github.com/kyrremann/unparsd/parsing"
 	"gorm.io/gorm"
@@ -76,7 +74,6 @@ func DistinctStyles(db *gorm.DB) ([]DistinctStyle, error) {
 		return nil, res.Error
 	}
 
-	fmt.Print(checkins)
 	for _, c := range checkins {
 		for i, style := range styles {
 			if style.Type == c.Type {
