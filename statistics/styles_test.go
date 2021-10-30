@@ -16,7 +16,7 @@ func TestMissingStyles(t *testing.T) {
 	assert.Len(t, styles, 174)
 }
 
-func TestUniqueStyles(t *testing.T) {
+func TestDistinctStyles(t *testing.T) {
 	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
 	assert.NoError(t, err)
 
