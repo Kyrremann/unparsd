@@ -26,7 +26,7 @@ func TestOpenInMemoryDatabase(t *testing.T) {
 		TotalComments:  0,
 		PhotoUrl:       "https://untappd.s3.amazonaws.com/photo/2016_03_01/b507b21dc14f5a0d5fbc48b260f89721_raw.jpg",
 		PurchaseVenue:  "",
-		CreatedAt:      "2016-03-01 19:06:42",
+		CheckinAt:      "2016-03-01 19:06:42",
 		Venue: models.Venue{
 			Name:    "Mad Fork",
 			City:    "",

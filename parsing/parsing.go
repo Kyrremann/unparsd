@@ -102,7 +102,7 @@ func InsertIntoDatabase(jsonCheckin models.JSONCheckin, db *gorm.DB) error {
 		TotalComments:  jsonCheckin.TotalComments,
 		PhotoUrl:       jsonCheckin.PhotoUrl,
 		PurchaseVenue:  jsonCheckin.PurchaseVenue,
-		CreatedAt:      jsonCheckin.CreatedAt,
+		CheckinAt:      jsonCheckin.CheckinAt,
 		Venue: models.Venue{
 			Name:    jsonCheckin.VenueName,
 			City:    jsonCheckin.VenueCity,

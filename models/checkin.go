@@ -8,7 +8,7 @@ type Checkin struct {
 	ID             int
 	RatingScore    float32
 	Comment        string
-	CreatedAt      string
+	CheckinAt      string
 	FlavorProfiles string
 	ServingTypes   string
 	TaggedFriends  string
@@ -26,7 +26,7 @@ type JSONCheckin struct {
 	CheckinID                 int    `json:"checkin_id,string"`
 	RatingScore               string `json:"rating_score"`
 	Comment                   string
-	CreatedAt                 string  `json:"created_at"`
+	CheckinAt                 string  `json:"created_at"`
 	FlavorProfiles            string  `json:"flavor_profiles"`
 	ServingTypes              string  `json:"serving_types"`
 	TaggedFriends             string  `json:"tagged_friends"`
