@@ -9,12 +9,12 @@ import (
 	"gorm.io/gorm"
 )
 
-// TODO: days_drinking
 type GlobalStats struct {
 	Checkins     int            `json:"checkins"`
 	UniqueBeers  int            `json:"unique_beers"`
 	StartDate    string         `json:"start_date"`
-	DaysDrinking int            `json:"days_drinking"`
+	DaysDrinking int            `gorm:"-" json:"days_drinking"`
+	BeersPerDay  float64        `gorm:"-" json:"beers_per_day"`
 	Periodes     []PeriodeStats `gorm:"-" json:"years"`
 }
 
@@ -191,6 +191,15 @@ func yearlyStats(db *gorm.DB) ([]PeriodeStats, error) {
 	return yearly, nil
 }
 
+func daysSince(dateString string) (int, error) {
+	date, err := time.Parse("2006-02-03", dateString)
+	if err != nil {
+		return 0, err
+	}
+
+	return int(time.Since(date).Hours() / 24), nil
+}
+
 func AllMyStats(db *gorm.DB) (GlobalStats, error) {
 	var globalStat GlobalStats
 	res := db.
@@ -214,6 +223,13 @@ func AllMyStats(db *gorm.DB) (GlobalStats, error) {
 		return GlobalStats{}, err
 	}
 	globalStat.Periodes = periodes
+
+	daysDrinking, err := daysSince(globalStat.StartDate)
+	if err != nil {
+		return GlobalStats{}, err
+	}
+	globalStat.DaysDrinking = daysDrinking
+	globalStat.BeersPerDay = math.Round((float64(globalStat.Checkins)/float64(daysDrinking))*100.00) / 100.00
 
 	return globalStat, nil
 }
