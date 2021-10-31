@@ -25,11 +25,11 @@ type MostPerDay struct {
 
 type PeriodeStats struct {
 	Checkins              int            `json:"checkins"`
-	Breweries             int            `json:"breweries"`
+	UniqueBreweries       int            `json:"unique_breweries"`
 	BreweryCountries      int            `json:"brewery_countries"`
-	Venues                int            `json:"venues"`
+	UniqueVenues          int            `json:"unique_venues"`
 	VenueCountries        int            `json:"venue_countries"`
-	Beers                 int            `json:"beers"`
+	UniqueBeers           int            `json:"unique_beers"`
 	MaxAbv                float64        `json:"max_abv"`
 	AvgAbv                float64        `json:"avg_abv"`
 	Styles                int            `json:"styles"`
@@ -102,12 +102,12 @@ func periodeStats(db *gorm.DB, groupBy, year string) ([]PeriodeStats, error) {
 		Table("checkins").
 		Select("count(checkins.id) as checkins," +
 			"count(DISTINCT(breweries.country)) as brewery_countries," +
-			"count(DISTINCT(beers.brewery_id)) as breweries," +
-			"count(DISTINCT(beers.id)) as beers," +
+			"count(DISTINCT(beers.brewery_id)) as unique_breweries," +
+			"count(DISTINCT(beers.id)) as unique_beers," +
 			"count(DISTINCT(beers.type)) as styles," +
 			"ROUND(max(beers.abv), 2) as max_abv," +
 			"ROUND(avg(beers.abv), 2) as avg_abv," +
-			"count(DISTINCT(checkins.venue_id)) as venues," +
+			"count(DISTINCT(checkins.venue_id)) as unique_venues," +
 			"count(DISTINCT(venues.country)) as venue_countries," +
 			"date(min(checkins.checkin_at)) as start_date," +
 			"strftime('%m', checkins.checkin_at) as month," +
