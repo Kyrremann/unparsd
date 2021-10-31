@@ -11,7 +11,7 @@ type Brewery struct {
 	Checkins int
 }
 
-func breweries(db *gorm.DB) ([]Brewery, error) {
+func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 	var breweries []Brewery
 	res := db.
 		Table("breweries").

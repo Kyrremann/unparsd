@@ -15,7 +15,7 @@ type Beer struct {
 	Brewery   string
 }
 
-func Beers(db *gorm.DB) ([]Beer, error) {
+func BeerStats(db *gorm.DB) ([]Beer, error) {
 	var beers []Beer
 	res := db.
 		Table("checkins").

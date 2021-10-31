@@ -11,7 +11,7 @@ func TestBreweries(t *testing.T) {
 	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
 	assert.NoError(t, err)
 
-	breweries, err := breweries(db)
+	breweries, err := BreweryStats(db)
 	assert.NoError(t, err)
 	assert.Len(t, breweries, 80)
 
