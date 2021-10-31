@@ -6,28 +6,30 @@ import (
 	"gorm.io/gorm"
 )
 
+// TODO: Days drinking
 type GlobalStats struct {
-	Checkins     int
-	UniqueBeers  int
-	StartDate    string
-	DaysDrinking int
-	Periodes     []PeriodeStats `gorm:"-"`
+	Checkins     int            `json:"checkins"`
+	UniqueBeers  int            `json:"unique_beers"`
+	StartDate    string         `json:"start_date"`
+	DaysDrinking int            `json:"days_drinking"`
+	Periodes     []PeriodeStats `gorm:"-" json:"years"`
 }
 
+// TODO: most_per_day
 type PeriodeStats struct {
-	Checkins         int
-	Breweries        int
-	BreweryCountries int
-	Venues           int
-	VenueCountries   int
-	Beers            int
-	MaxAbv           float64
-	AvgAbv           float64
-	Styles           int
-	StartDate        string
-	Month            int
-	Year             int
-	Months           []PeriodeStats `gorm:"-"`
+	Checkins         int            `json:"checkins"`
+	Breweries        int            `json:"breweries"`
+	BreweryCountries int            `json:"brewery_countries"`
+	Venues           int            `json:"venues"`
+	VenueCountries   int            `json:"venue_countries"`
+	Beers            int            `json:"beers"`
+	MaxAbv           float64        `json:"max_abv"`
+	AvgAbv           float64        `json:"avg_abv"`
+	Styles           int            `json:"styles"`
+	StartDate        string         `json:"start_date"`
+	Month            *int           `json:"month,omitempty"`
+	Year             int            `json:"year"`
+	Months           []PeriodeStats `gorm:"-" json:"months,omitempty"`
 }
 
 func periodeStats(db *gorm.DB, groupBy, year string) ([]PeriodeStats, error) {
@@ -76,6 +78,7 @@ func yearlyStats(db *gorm.DB) ([]PeriodeStats, error) {
 			return nil, err
 		}
 		yearly[i].Months = monthly
+		yearly[i].Month = nil
 	}
 
 	return yearly, nil

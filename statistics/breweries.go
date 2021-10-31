@@ -3,12 +3,12 @@ package statistics
 import "gorm.io/gorm"
 
 type Brewery struct {
-	Name     string
-	Country  string
-	State    string
-	City     string
-	Beers    string
-	Checkins int
+	Name     string `json:"name"`
+	Country  string `json:"country"`
+	State    string `json:"state"`
+	City     string `json:"city"`
+	Beers    string `json:"beers"`
+	Checkins int    `json:"checkins"`
 }
 
 func BreweryStats(db *gorm.DB) ([]Brewery, error) {

@@ -6,10 +6,12 @@ import (
 	"gorm.io/gorm"
 )
 
+var AllStylesJson []byte
+
 type DistinctStyle struct {
-	Type     string
-	Distinct int
-	Total    int
+	Type     string `json:"type"`
+	Distinct int    `json:"distinct"`
+	Total    int    `json:"total"`
 }
 
 type style struct {
@@ -41,7 +43,7 @@ func intersection(a, b []string) []string {
 
 func MissingStyles(db *gorm.DB) ([]string, error) {
 	var allStyles []string
-	err := parsing.ParseJSON("../fixture/all_styles.json", &allStyles)
+	err := parsing.UnmarshalJson(AllStylesJson, &allStyles)
 	if err != nil {
 		return nil, err
 	}

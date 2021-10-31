@@ -87,16 +87,16 @@ func testDatabaseModels(t *testing.T, db *gorm.DB) {
 }
 
 func TestParseJSON(t *testing.T) {
-	checkins, err := ParseJSONToCheckins("../fixture/untappd.json")
+	checkins, err := ParseJsonToCheckins("../fixture/untappd.json")
 	assert.NoError(t, err)
 
 	assert.Len(t, checkins, 125)
 
 	checkin := checkins[0]
-	testJSONImport(t, checkin)
+	testJsonImport(t, checkin)
 }
 
-func testJSONImport(t *testing.T, checkin models.JSONCheckin) {
+func testJsonImport(t *testing.T, checkin models.JSONCheckin) {
 	assert.Equal(t, 1, checkin.TotalToasts)
 	assert.Equal(t, "3", checkin.RatingScore)
 	assert.Equal(t, 283107883, checkin.CheckinID)
@@ -107,10 +107,10 @@ func testJSONImport(t *testing.T, checkin models.JSONCheckin) {
 	assert.Equal(t, "Mad Fork", checkin.VenueName)
 }
 
-func TestParseJSONIntoDatabase(t *testing.T) {
-	checkins, err := ParseJSONToCheckins("../fixture/untappd.json")
+func TestParseJsonIntoDatabase(t *testing.T) {
+	checkins, err := ParseJsonToCheckins("../fixture/untappd.json")
 	assert.NoError(t, err)
-	testJSONImport(t, checkins[0])
+	testJsonImport(t, checkins[0])
 
 	db, err := OpenInMemoryDatabase()
 	assert.NoError(t, err)

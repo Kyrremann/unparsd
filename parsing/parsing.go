@@ -17,7 +17,7 @@ func LoadJsonIntoDatabase(file string) (*gorm.DB, error) {
 		return nil, err
 	}
 
-	checkins, err := ParseJSONToCheckins(file)
+	checkins, err := ParseJsonToCheckins(file)
 	if err != nil {
 		return nil, err
 	}
@@ -40,29 +40,28 @@ func OpenInMemoryDatabase() (*gorm.DB, error) {
 	return db, nil
 }
 
-func ParseJSON(file string, v interface{}) error {
+func ParseJsonFile(file string, v interface{}) error {
 	jsonFile, err := os.Open(file)
 	if err != nil {
 		return err
 	}
 	defer jsonFile.Close()
 
-	byteValue, err := ioutil.ReadAll(jsonFile)
+	bytes, err := ioutil.ReadAll(jsonFile)
 	if err != nil {
 		return err
 	}
 
-	err = json.Unmarshal(byteValue, v)
-	if err != nil {
-		return err
-	}
-
-	return nil
+	return UnmarshalJson(bytes, v)
 }
 
-func ParseJSONToCheckins(file string) ([]models.JSONCheckin, error) {
+func UnmarshalJson(bytes []byte, v interface{}) error {
+	return json.Unmarshal(bytes, v)
+}
+
+func ParseJsonToCheckins(file string) ([]models.JSONCheckin, error) {
 	var checkins []models.JSONCheckin
-	err := ParseJSON(file, &checkins)
+	err := ParseJsonFile(file, &checkins)
 	if err != nil {
 		return nil, err
 	}
@@ -131,4 +130,22 @@ func InsertIntoDatabase(jsonCheckin models.JSONCheckin, db *gorm.DB) error {
 
 	res := db.Create(&dbCheckin)
 	return res.Error
+}
+
+func SaveDataToJsonFile(v interface{}, fileName string) error {
+	bytes, err := json.Marshal(v)
+	if err != nil {
+		return err
+	}
+
+	file, err := os.Create(fileName)
+	if err != nil {
+		return err
+	}
+	_, err = file.Write(bytes)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
