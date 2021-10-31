@@ -42,27 +42,27 @@ type PeriodeStats struct {
 	BeersPerDay           float64        `gorm:"-" json:"beers_per_day"`
 }
 
-func daysInMonth(year, month string) int {
+func daysInMonth(year, month string) (int, error) {
 	intYear, err := strconv.Atoi(year)
 	if err != nil {
-		return 0
+		return 0, err
 	}
 
 	intMonth, err := strconv.Atoi(month)
 	if err != nil {
-		return 0
+		return 0, err
 	}
 
-	return time.Date(intYear, time.Month(intMonth)+1, 0, 0, 0, 0, 0, time.UTC).Day()
+	return time.Date(intYear, time.Month(intMonth)+1, 0, 0, 0, 0, 0, time.UTC).Day(), nil
 }
 
-func daysInYear(year string) int {
+func daysInYear(year string) (int, error) {
 	intYear, err := strconv.Atoi(year)
 	if err != nil {
-		return 0
+		return 0, err
 	}
 
-	return time.Date(intYear, time.December, 31, 0, 0, 0, 0, time.UTC).YearDay()
+	return time.Date(intYear, time.December, 31, 0, 0, 0, 0, time.UTC).YearDay(), nil
 }
 
 func MostCheckinsPerDay(db *gorm.DB, year, month string) (MostPerDay, error) {
@@ -145,7 +145,11 @@ func monthlyStats(db *gorm.DB, year string) ([]PeriodeStats, error) {
 		}
 		monthly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
 
-		monthly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(daysInMonth(year, *ps.Month)))*100.00) / 100.00
+		daysInMonth, err := daysInMonth(year, *ps.Month)
+		if err != nil {
+			return nil, err
+		}
+		monthly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(daysInMonth))*100.00) / 100.00
 	}
 
 	return monthly, nil
@@ -177,7 +181,11 @@ func yearlyStats(db *gorm.DB) ([]PeriodeStats, error) {
 		}
 		yearly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
 
-		yearly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(daysInYear(ps.Year)))*100.00) / 100.00
+		daysInYear, err := daysInYear(ps.Year)
+		if err != nil {
+			return nil, err
+		}
+		yearly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(daysInYear))*100.00) / 100.00
 	}
 
 	return yearly, nil
