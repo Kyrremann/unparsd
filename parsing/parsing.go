@@ -31,7 +31,7 @@ func LoadJsonIntoDatabase(file string) (*gorm.DB, error) {
 }
 
 func OpenInMemoryDatabase() (*gorm.DB, error) {
-	db, err := gorm.Open(sqlite.Open("file::memory:?cache=shared"), &gorm.Config{})
+	db, err := gorm.Open(sqlite.Open("file::memory:"), &gorm.Config{})
 	if err != nil {
 		return nil, err
 	}
