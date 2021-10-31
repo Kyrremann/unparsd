@@ -90,7 +90,7 @@ func TestParseJSON(t *testing.T) {
 	checkins, err := ParseJSONToCheckins("../fixture/untappd.json")
 	assert.NoError(t, err)
 
-	assert.Len(t, checkins, 100)
+	assert.Len(t, checkins, 125)
 
 	checkin := checkins[0]
 	testJSONImport(t, checkin)
@@ -123,6 +123,6 @@ func TestParseJSONIntoDatabase(t *testing.T) {
 	var dbCheckins []models.Checkin
 	res := db.Find(&dbCheckins)
 	assert.NoError(t, res.Error)
-	assert.Equal(t, int64(100), res.RowsAffected)
+	assert.Equal(t, int64(125), res.RowsAffected)
 	testDatabaseModels(t, db)
 }

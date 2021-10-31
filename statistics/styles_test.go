@@ -13,7 +13,7 @@ func TestMissingStyles(t *testing.T) {
 
 	styles, err := MissingStyles(db)
 	assert.NoError(t, err)
-	assert.Len(t, styles, 174)
+	assert.Len(t, styles, 163)
 }
 
 func TestDistinctStyles(t *testing.T) {
@@ -22,5 +22,5 @@ func TestDistinctStyles(t *testing.T) {
 
 	styles, err := DistinctStyles(db)
 	assert.NoError(t, err)
-	assert.Len(t, styles, 40)
+	assert.Len(t, styles, 57)
 }
