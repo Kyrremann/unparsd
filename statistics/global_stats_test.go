@@ -44,3 +44,19 @@ func TestMostCheckinsPerDay(t *testing.T) {
 	assert.Equal(t, 1, mostUniqueBeersPerDay.Count)
 	assert.Equal(t, "2016-05-15", mostUniqueBeersPerDay.Date)
 }
+
+func TestDaysInMonth(t *testing.T) {
+	days := daysInMonth("2016", "02")
+	assert.Equal(t, 29, days)
+
+	days = daysInMonth("2017", "02")
+	assert.Equal(t, 28, days)
+}
+
+func TestDaysInYear(t *testing.T) {
+	days := daysInYear("2016")
+	assert.Equal(t, 366, days)
+
+	days = daysInYear("2017")
+	assert.Equal(t, 365, days)
+}

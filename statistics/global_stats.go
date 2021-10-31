@@ -1,6 +1,10 @@
 package statistics
 
 import (
+	"math"
+	"strconv"
+	"time"
+
 	"github.com/kyrremann/unparsd/models"
 	"gorm.io/gorm"
 )
@@ -35,6 +39,30 @@ type PeriodeStats struct {
 	Months                []PeriodeStats `gorm:"-" json:"months,omitempty"`
 	MostCheckinsPerDay    MostPerDay     `gorm:"-" json:"most_checkins_per_day"`
 	MostUniqueBeersPerDay MostPerDay     `gorm:"-" json:"most_unique_beers_per_day"`
+	BeersPerDay           float64        `gorm:"-" json:"beers_per_day"`
+}
+
+func daysInMonth(year, month string) int {
+	intYear, err := strconv.Atoi(year)
+	if err != nil {
+		return 0
+	}
+
+	intMonth, err := strconv.Atoi(month)
+	if err != nil {
+		return 0
+	}
+
+	return time.Date(intYear, time.Month(intMonth)+1, 0, 0, 0, 0, 0, time.UTC).Day()
+}
+
+func daysInYear(year string) int {
+	intYear, err := strconv.Atoi(year)
+	if err != nil {
+		return 0
+	}
+
+	return time.Date(intYear, time.December, 31, 0, 0, 0, 0, time.UTC).YearDay()
 }
 
 func MostCheckinsPerDay(db *gorm.DB, year, month string) (MostPerDay, error) {
@@ -116,6 +144,8 @@ func monthlyStats(db *gorm.DB, year string) ([]PeriodeStats, error) {
 			return nil, err
 		}
 		monthly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
+
+		monthly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(daysInMonth(year, *ps.Month)))*100.00) / 100.00
 	}
 
 	return monthly, nil
@@ -127,25 +157,27 @@ func yearlyStats(db *gorm.DB) ([]PeriodeStats, error) {
 		return nil, err
 	}
 
-	for i, pd := range yearly {
-		monthly, err := monthlyStats(db, pd.Year)
+	for i, ps := range yearly {
+		monthly, err := monthlyStats(db, ps.Year)
 		if err != nil {
 			return nil, err
 		}
 		yearly[i].Months = monthly
 		yearly[i].Month = nil
 
-		mostCheckinsPerDay, err := MostCheckinsPerDay(db, pd.Year, "")
+		mostCheckinsPerDay, err := MostCheckinsPerDay(db, ps.Year, "")
 		if err != nil {
 			return nil, err
 		}
 
 		yearly[i].MostCheckinsPerDay = mostCheckinsPerDay
-		mostUniqueBeersPerDay, err := MostUniqueBeersPerDay(db, pd.Year, "")
+		mostUniqueBeersPerDay, err := MostUniqueBeersPerDay(db, ps.Year, "")
 		if err != nil {
 			return nil, err
 		}
 		yearly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
+
+		yearly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(daysInYear(ps.Year)))*100.00) / 100.00
 	}
 
 	return yearly, nil
