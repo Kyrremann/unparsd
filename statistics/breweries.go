@@ -20,8 +20,8 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 			"breweries.name, country, city, state," +
 			"group_concat(beers.name) as beers," +
 			"count(checkins.beer_id) as checkins").
-		Joins("INNER JOIN beers ON beers.brewery_id == breweries.id").
-		Joins("INNER JOIN checkins ON beers.id == checkins.beer_id").
+		Joins("LEFT JOIN beers ON beers.brewery_id == breweries.id").
+		Joins("LEFT JOIN checkins ON beers.id == checkins.beer_id").
 		Group("beers.brewery_id").
 		Find(&breweries)
 

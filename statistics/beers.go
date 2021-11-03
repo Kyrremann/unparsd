@@ -30,8 +30,8 @@ func BeerStats(db *gorm.DB) ([]Beer, error) {
 			"beers.ibu, beers.abv," +
 			"breweries.name as brewery," +
 			"breweries.id as brewery_id").
-		Joins("INNER JOIN beers ON beers.id = checkins.beer_id").
-		Joins("INNER JOIN breweries ON breweries.id = beers.brewery_id").
+		Joins("LEFT JOIN beers ON beers.id = checkins.beer_id").
+		Joins("LEFT JOIN breweries ON breweries.id = beers.brewery_id").
 		Group("checkins.beer_id").
 		Find(&beers)
 

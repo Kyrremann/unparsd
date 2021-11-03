@@ -107,14 +107,14 @@ func periodeStats(db *gorm.DB, groupBy, year string) ([]PeriodeStats, error) {
 			"count(DISTINCT(beers.type)) as styles," +
 			"ROUND(max(beers.abv), 2) as max_abv," +
 			"ROUND(avg(beers.abv), 2) as avg_abv," +
-			"count(DISTINCT(checkins.venue_id)) as unique_venues," +
+			"count(DISTINCT(checkins.venue_name)) as unique_venues," +
 			"count(DISTINCT(venues.country)) as venue_countries," +
 			"date(min(checkins.checkin_at)) as start_date," +
 			"strftime('%m', checkins.checkin_at) as month," +
 			"strftime('%Y', checkins.checkin_at) as year").
-		Joins("INNER JOIN breweries ON beers.brewery_id == breweries.id").
-		Joins("INNER JOIN beers ON checkins.beer_id == beers.id").
-		Joins("INNER JOIN venues ON checkins.venue_id == venues.name").
+		Joins("LEFT JOIN beers ON checkins.beer_id == beers.id").
+		Joins("LEFT JOIN breweries ON beers.brewery_id == breweries.id").
+		Joins("LEFT JOIN venues ON checkins.venue_name == venues.name").
 		Group(groupBy)
 
 	if len(year) > 0 {
