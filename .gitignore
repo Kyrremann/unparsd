@@ -1,4 +1,5 @@
 gorm.db
+untappd.json
 .vscode/
 .DS_Store
 output/
