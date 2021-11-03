@@ -34,12 +34,20 @@ type PeriodeStats struct {
 	AvgAbv                float64        `json:"avg_abv"`
 	Styles                int            `json:"styles"`
 	StartDate             string         `json:"start_date"`
-	Month                 *string        `json:"month,omitempty"`
+	Month                 string         `json:"month,omitempty"`
 	Year                  string         `json:"year"`
 	Months                []PeriodeStats `gorm:"-" json:"months,omitempty"`
 	MostCheckinsPerDay    MostPerDay     `gorm:"-" json:"most_checkins_per_day"`
 	MostUniqueBeersPerDay MostPerDay     `gorm:"-" json:"most_unique_beers_per_day"`
 	BeersPerDay           float64        `gorm:"-" json:"beers_per_day"`
+}
+
+func getMonthAsString(month string) (string, error) {
+	intMonth, err := strconv.Atoi(month)
+	if err != nil {
+		return "", err
+	}
+	return time.Month(intMonth).String(), nil
 }
 
 func daysInMonth(year, month string) (int, error) {
@@ -133,23 +141,29 @@ func monthlyStats(db *gorm.DB, year string) ([]PeriodeStats, error) {
 	}
 
 	for i, ps := range monthly {
-		mostCheckinsPerDay, err := MostCheckinsPerDay(db, year, *ps.Month)
+		mostCheckinsPerDay, err := MostCheckinsPerDay(db, year, ps.Month)
 		if err != nil {
 			return nil, err
 		}
 
 		monthly[i].MostCheckinsPerDay = mostCheckinsPerDay
-		mostUniqueBeersPerDay, err := MostUniqueBeersPerDay(db, year, *ps.Month)
+		mostUniqueBeersPerDay, err := MostUniqueBeersPerDay(db, year, ps.Month)
 		if err != nil {
 			return nil, err
 		}
 		monthly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
 
-		daysInMonth, err := daysInMonth(year, *ps.Month)
+		daysInMonth, err := daysInMonth(year, ps.Month)
 		if err != nil {
 			return nil, err
 		}
 		monthly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(daysInMonth))*100.00) / 100.00
+
+		stringMonth, err := getMonthAsString(ps.Month)
+		if err != nil {
+			return nil, err
+		}
+		monthly[i].Month = stringMonth
 	}
 
 	return monthly, nil
@@ -167,7 +181,7 @@ func yearlyStats(db *gorm.DB) ([]PeriodeStats, error) {
 			return nil, err
 		}
 		yearly[i].Months = monthly
-		yearly[i].Month = nil
+		yearly[i].Month = ""
 
 		mostCheckinsPerDay, err := MostCheckinsPerDay(db, ps.Year, "")
 		if err != nil {

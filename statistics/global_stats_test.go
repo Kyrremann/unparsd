@@ -20,6 +20,7 @@ func TestAllMy(t *testing.T) {
 	assert.LessOrEqual(t, 0.059, globalStats.BeersPerDay)
 	assert.Len(t, globalStats.Periodes, 5)
 	assert.Len(t, globalStats.Periodes["2016"].Months, 3)
+	assert.Equal(t, "March", globalStats.Periodes["2016"].Months[0].Month)
 }
 
 func TestMostCheckinsPerDay(t *testing.T) {
@@ -71,5 +72,10 @@ func TestDaysSince(t *testing.T) {
 	days, err := daysSince("1987-07-09")
 	assert.NoError(t, err)
 	assert.GreaterOrEqual(t, 12716, days)
+}
 
+func TestGetMonthAsString(t *testing.T) {
+	month, err := getMonthAsString("10")
+	assert.NoError(t, err)
+	assert.Equal(t, "October", month)
 }
