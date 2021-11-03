@@ -3,6 +3,7 @@ package statistics
 import "gorm.io/gorm"
 
 type Brewery struct {
+	ID       int    `json:"id"`
 	Name     string `json:"name"`
 	Country  string `json:"country"`
 	State    string `json:"state"`
@@ -15,7 +16,8 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 	var breweries []Brewery
 	res := db.
 		Table("breweries").
-		Select("breweries.name, country, city, state," +
+		Select("breweries.id as id," +
+			"breweries.name, country, city, state," +
 			"group_concat(beers.name) as beers," +
 			"count(checkins.beer_id) as checkins").
 		Joins("INNER JOIN beers ON beers.brewery_id == breweries.id").
