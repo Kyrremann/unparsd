@@ -23,7 +23,7 @@ func BeerStats(db *gorm.DB) ([]Beer, error) {
 			"ROUND(AVG(checkins.rating_score), 2) as avg_rating," +
 			"count(checkins.id) as checkins," +
 			"beers.type as type," +
-			"strftime('%Y-%m-%d', checkins.checkin_at," +
+			"strftime('%Y-%m-%d', checkins.checkin_at) as checkin_at," +
 			"beers.ibu, beers.abv," +
 			"breweries.name as brewery").
 		Joins("INNER JOIN beers ON beers.id = checkins.beer_id").
