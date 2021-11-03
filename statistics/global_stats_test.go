@@ -19,7 +19,7 @@ func TestAllMy(t *testing.T) {
 	assert.GreaterOrEqual(t, globalStats.DaysDrinking, 2128)
 	assert.LessOrEqual(t, 0.059, globalStats.BeersPerDay)
 	assert.Len(t, globalStats.Periodes, 5)
-	assert.Len(t, globalStats.Periodes[0].Months, 3)
+	assert.Len(t, globalStats.Periodes["2016"].Months, 3)
 }
 
 func TestMostCheckinsPerDay(t *testing.T) {
