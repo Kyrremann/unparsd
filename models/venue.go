@@ -1,10 +1,6 @@
 package models
 
-import "gorm.io/gorm"
-
 type Venue struct {
-	gorm.Model
-
 	Name    string `gorm:"primaryKey"`
 	City    string
 	State   string
