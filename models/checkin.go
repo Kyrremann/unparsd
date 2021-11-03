@@ -18,7 +18,7 @@ type Checkin struct {
 	PurchaseVenue  string
 	BeerID         int
 	Beer           Beer
-	VenueID        string
+	VenueName      string
 	Venue          Venue `gorm:"references:Name"`
 }
 

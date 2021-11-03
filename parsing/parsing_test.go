@@ -81,7 +81,7 @@ func testDatabaseModels(t *testing.T, db *gorm.DB) {
 	assert.GreaterOrEqual(t, len(brw.Beers), 1)
 
 	var v models.Venue
-	res = db.First(&v)
+	res = db.First(&v, "name = ?", "Mad Fork")
 	assert.NoError(t, res.Error)
 	assert.Equal(t, "Mad Fork", v.Name)
 }
@@ -124,5 +124,9 @@ func TestParseJsonIntoDatabase(t *testing.T) {
 	res := db.Find(&dbCheckins)
 	assert.NoError(t, res.Error)
 	assert.Equal(t, int64(125), res.RowsAffected)
+	var venues int64
+	res = db.Model(&models.Venue{}).Count(&venues)
+	assert.NoError(t, res.Error)
+	assert.Equal(t, int64(23), venues)
 	testDatabaseModels(t, db)
 }
