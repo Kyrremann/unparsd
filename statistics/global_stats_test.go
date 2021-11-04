@@ -71,7 +71,7 @@ func TestDaysInYear(t *testing.T) {
 func TestDaysSince(t *testing.T) {
 	days, err := daysSince("1987-07-09")
 	assert.NoError(t, err)
-	assert.GreaterOrEqual(t, 12716, days)
+	assert.GreaterOrEqual(t, days, 12716)
 }
 
 func TestGetMonthAsString(t *testing.T) {

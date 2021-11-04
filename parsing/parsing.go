@@ -40,14 +40,23 @@ func OpenInMemoryDatabase() (*gorm.DB, error) {
 	return db, nil
 }
 
-func ParseJsonFile(file string, v interface{}) error {
+func ReadFile(file string) ([]byte, error) {
 	jsonFile, err := os.Open(file)
 	if err != nil {
-		return err
+		return nil, err
 	}
 	defer jsonFile.Close()
 
 	bytes, err := ioutil.ReadAll(jsonFile)
+	if err != nil {
+		return nil, err
+	}
+
+	return bytes, nil
+}
+
+func ParseJsonFile(file string, v interface{}) error {
+	bytes, err := ReadFile(file)
 	if err != nil {
 		return err
 	}
