@@ -10,13 +10,8 @@ var AllStylesJson []byte
 
 type DistinctStyle struct {
 	Type     string `json:"type"`
-	Distinct int    `json:"distinct"`
+	Distinct int    `gorm:"-" json:"distinct"`
 	Total    int    `json:"total"`
-}
-
-type style struct {
-	Type  string
-	Total int
 }
 
 func contains(list []string, el string) bool {
@@ -59,7 +54,7 @@ func MissingStyles(db *gorm.DB) ([]string, error) {
 
 func DistinctStyles(db *gorm.DB) ([]DistinctStyle, error) {
 	var styles []DistinctStyle
-	var distinctive []style
+	var distinctive []DistinctStyle
 	res := db.Model(&models.Beer{}).Select("Type, count(Type) as total").Group("Type").Find(&distinctive)
 	if res.Error != nil {
 		return nil, res.Error
@@ -69,7 +64,7 @@ func DistinctStyles(db *gorm.DB) ([]DistinctStyle, error) {
 		styles = append(styles, DistinctStyle{Type: d.Type, Distinct: d.Total})
 	}
 
-	var checkins []style
+	var checkins []DistinctStyle
 	res = db.Model(&models.Checkin{}).Select("checkins.beer").Joins("Beer").Select("Beer.Type, count(Beer.Type) as total").Group("Beer.Type").Find(&checkins)
 	if res.Error != nil {
 		return nil, res.Error

@@ -1,20 +1,17 @@
 package statistics
 
 import (
+	"github.com/kyrremann/unparsd/models"
 	"gorm.io/gorm"
 )
 
 type Beer struct {
-	ID        int     `json:"id"`
-	Name      string  `json:"name"`
-	AvgRating float64 `json:"avg_rating"`
-	CheckinAt string  `json:"checkin_at"`
-	Type      string  `json:"type"`
-	Checkins  int     `json:"checkins"`
-	Ibu       int     `json:"ibu"`
-	Abv       float32 `json:"abv"`
-	Brewery   string  `json:"brewery"`
-	BreweryID int     `json:"brewery_id"`
+	models.Beer
+
+	AvgRating   float64 `json:"avg_rating"`
+	CheckinAt   string  `json:"checkin_at"`
+	Checkins    int     `json:"checkins"`
+	BreweryName string  `json:"brewery"`
 }
 
 func BeerStats(db *gorm.DB) ([]Beer, error) {
@@ -28,7 +25,7 @@ func BeerStats(db *gorm.DB) ([]Beer, error) {
 			"beers.type as type," +
 			"strftime('%Y-%m-%d', checkins.checkin_at) as checkin_at," +
 			"beers.ibu, beers.abv," +
-			"breweries.name as brewery," +
+			"breweries.name as brewery_name," +
 			"breweries.id as brewery_id").
 		Joins("LEFT JOIN beers ON beers.id = checkins.beer_id").
 		Joins("LEFT JOIN breweries ON breweries.id = beers.brewery_id").

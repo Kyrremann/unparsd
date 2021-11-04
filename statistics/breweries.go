@@ -1,15 +1,15 @@
 package statistics
 
-import "gorm.io/gorm"
+import (
+	"github.com/kyrremann/unparsd/models"
+	"gorm.io/gorm"
+)
 
 type Brewery struct {
-	ID       int    `json:"id"`
-	Name     string `json:"name"`
-	Country  string `json:"country"`
-	State    string `json:"state"`
-	City     string `json:"city"`
-	Beers    string `json:"beers"`
-	Checkins int    `json:"checkins"`
+	models.Brewery
+
+	ListOfBeers string `json:"beers"`
+	Checkins    int    `json:"checkins"`
 }
 
 func BreweryStats(db *gorm.DB) ([]Brewery, error) {
@@ -18,7 +18,7 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 		Table("breweries").
 		Select("breweries.id as id," +
 			"breweries.name, country, city, state," +
-			"group_concat(beers.name) as beers," +
+			"group_concat(beers.name) as list_of_beers," +
 			"count(checkins.beer_id) as checkins").
 		Joins("LEFT JOIN beers ON beers.brewery_id == breweries.id").
 		Joins("LEFT JOIN checkins ON beers.id == checkins.beer_id").
