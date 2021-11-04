@@ -3,7 +3,7 @@
         {
             "title": "## 🚀 Features",
             "labels": [
-                "feature"
+                "feat"
             ]
         },
         {
@@ -27,7 +27,7 @@
     ],
     "transformers": [
         {
-            "pattern": "(.):(.+)",
+            "pattern": "(.):\\s?(.+)",
             "target": "- $2"
         }
     ]
