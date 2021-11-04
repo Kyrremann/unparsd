@@ -27,7 +27,7 @@ func TestCountries(t *testing.T) {
 	countries, err := CountryStats(db)
 	assert.NoError(t, err)
 	country := countries["AUS"]
-	assert.Equal(t, "Australia", country.Country)
+	assert.Equal(t, "Australia", country.Name)
 	assert.Equal(t, 1, country.Checkins)
 	assert.Equal(t, 1, country.Breweries)
 }

@@ -10,7 +10,7 @@ type Country struct {
 	FillKey   string `json:"fillKey"`
 	Breweries int    `json:"breweries"`
 	Checkins  int    `json:"checkins"`
-	Country   string `json:"-"`
+	Name      string `json:"name"`
 }
 
 type ISO3166Alpha3 struct {
@@ -42,7 +42,7 @@ func CountryStats(db *gorm.DB) (map[string]Country, error) {
 		Model(models.Checkin{}).
 		Select("count(checkins.id) as checkins," +
 			"count(DISTINCT(breweries.id)) as breweries," +
-			"breweries.country," +
+			"breweries.country as name," +
 			"'brewery' as fill_key").
 		Joins("LEFT JOIN beers on checkins.beer_id == beers.id").
 		Joins("LEFT JOIN breweries on beers.brewery_id == breweries.id").
@@ -57,7 +57,7 @@ func CountryStats(db *gorm.DB) (map[string]Country, error) {
 	}
 	countries := make(map[string]Country)
 	for _, c := range dbCountries {
-		ISO3166Alpha3, err := iso.getISO3166Alpha3(c.Country)
+		ISO3166Alpha3, err := iso.getISO3166Alpha3(c.Name)
 		if err != nil {
 			return nil, err
 		}
