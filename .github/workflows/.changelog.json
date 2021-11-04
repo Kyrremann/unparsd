@@ -1,0 +1,34 @@
+{
+    "categories": [
+        {
+            "title": "## 🚀 Features",
+            "labels": [
+                "feature"
+            ]
+        },
+        {
+            "title": "## 🐛 Fixes",
+            "labels": [
+                "fix"
+            ]
+        },
+        {
+            "title": "## 📦 Uncategorized",
+            "labels": []
+        }
+    ],
+    "template": "${{CHANGELOG}}\n\nUncategorized:\n${{UNCATEGORIZED}}\n\nIgnored:\n${{IGNORED}}\n\n${{UNCATEGORIZED_COUNT}}\n${{IGNORED_COUNT}}",
+    "label_extractor": [
+        {
+            "pattern": "(.):(.+)",
+            "target": "$1",
+            "flags": "gu"
+        }
+    ],
+    "transformers": [
+        {
+            "pattern": "(.):(.+)",
+            "target": "- $2"
+        }
+    ]
+}

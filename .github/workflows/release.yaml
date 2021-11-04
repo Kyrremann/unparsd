@@ -19,6 +19,7 @@ jobs:
         uses: mikepenz/release-changelog-builder-action@v2.5.1
         with:
           commitMode: true
+          configuration: .changelog
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
       - uses: softprops/action-gh-release@v1
