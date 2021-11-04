@@ -46,6 +46,16 @@ func GenerateAndSave(db *gorm.DB, path string) error {
 		return err
 	}
 
+	countries, err := CountryStats(db)
+	if err != nil {
+		return err
+	}
+
+	err = parsing.SaveDataToJsonFile(countries, path+"/countries.json")
+	if err != nil {
+		return err
+	}
+
 	allMyStats, err := AllMyStats(db)
 	if err != nil {
 		return err
