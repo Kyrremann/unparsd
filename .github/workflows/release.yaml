@@ -22,4 +22,5 @@ jobs:
       - uses: softprops/action-gh-release@v1
         with:
           body: ${{ steps.build_changelog.outputs.changelog }}
+          commitMode: true
           files: unparsd
