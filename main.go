@@ -2,9 +2,9 @@ package main
 
 import (
 	_ "embed"
-	"log"
 	"path/filepath"
 
+	"github.com/jessevdk/go-flags"
 	"github.com/kyrremann/unparsd/parsing"
 	"github.com/kyrremann/unparsd/statistics"
 )
@@ -12,20 +12,31 @@ import (
 //go:embed fixture/all_styles.json
 var allStylesJson []byte
 
+var opts struct {
+	Untappd string `short:"u" long:"untappd" description:"" value-name:"untappd.json" default:"untappd.json"`
+	Output  string `short:"o" long:"output" description:"" value-name:"_data" default:"_data"`
+}
+
 func main() {
 	statistics.AllStylesJson = allStylesJson
-	db, err := parsing.LoadJsonIntoDatabase("untappd.json")
+
+	_, err := flags.Parse(&opts)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 
-	base, err := filepath.Abs("output/")
+	db, err := parsing.LoadJsonIntoDatabase(opts.Untappd)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
+	}
+
+	base, err := filepath.Abs(opts.Output)
+	if err != nil {
+		panic(err)
 	}
 
 	err = statistics.GenerateAndSave(db, base)
 	if err != nil {
-		log.Fatal(err)
+		panic(err)
 	}
 }
