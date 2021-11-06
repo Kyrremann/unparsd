@@ -2,6 +2,7 @@ package main
 
 import (
 	_ "embed"
+	"os"
 	"path/filepath"
 
 	"github.com/jessevdk/go-flags"
@@ -9,18 +10,22 @@ import (
 	"github.com/kyrremann/unparsd/statistics"
 )
 
-//go:embed fixture/all_styles.json
-var allStylesJson []byte
-
 var opts struct {
 	Untappd string `short:"u" long:"untappd" description:"" value-name:"untappd.json" default:"untappd.json"`
 	Output  string `short:"o" long:"output" description:"" value-name:"_data" default:"_data"`
 }
 
 func main() {
-	statistics.AllStylesJson = allStylesJson
-
 	_, err := flags.Parse(&opts)
+	if err != nil {
+		panic(err)
+	}
+
+	_, err = os.Stat(opts.Output)
+	if err != nil {
+		panic(err)
+	}
+	_, err = os.Stat(opts.Untappd)
 	if err != nil {
 		panic(err)
 	}

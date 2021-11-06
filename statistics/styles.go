@@ -1,12 +1,14 @@
 package statistics
 
 import (
+	"fmt"
+	"net/http"
+	"strings"
+
+	"github.com/PuerkitoBio/goquery"
 	"github.com/kyrremann/unparsd/models"
-	"github.com/kyrremann/unparsd/parsing"
 	"gorm.io/gorm"
 )
-
-var AllStylesJson []byte
 
 type DistinctStyle struct {
 	Type     string `json:"type"`
@@ -36,9 +38,34 @@ func intersection(a, b []string) []string {
 	return c
 }
 
+func getStylesFromUntappd() ([]string, error) {
+	resp, err := http.Get("https://untappd.com/beer/top_rated")
+	if err != nil {
+		return nil, err
+	}
+
+	defer resp.Body.Close()
+	if resp.StatusCode != 200 {
+		return nil, fmt.Errorf("status code error: %d %s", resp.StatusCode, resp.Status)
+	}
+	doc, err := goquery.NewDocumentFromReader(resp.Body)
+	if err != nil {
+		return nil, err
+	}
+
+	var styles []string
+	doc.Find("select#filter_picker").Find("option").Each(func(i int, s *goquery.Selection) {
+		style := strings.TrimSpace(s.Text())
+		if style != "Show All Styles" {
+			styles = append(styles, style)
+		}
+	})
+
+	return styles, nil
+}
+
 func MissingStyles(db *gorm.DB) ([]string, error) {
-	var allStyles []string
-	err := parsing.UnmarshalJson(AllStylesJson, &allStyles)
+	allStyles, err := getStylesFromUntappd()
 	if err != nil {
 		return nil, err
 	}

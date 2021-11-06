@@ -7,18 +7,6 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMissingStyles(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
-	assert.NoError(t, err)
-
-	AllStylesJson, err = parsing.ReadFile("../fixture/all_styles.json")
-	assert.NoError(t, err)
-
-	styles, err := MissingStyles(db)
-	assert.NoError(t, err)
-	assert.Len(t, styles, 163)
-}
-
 func TestDistinctStyles(t *testing.T) {
 	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
 	assert.NoError(t, err)
