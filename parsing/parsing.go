@@ -9,6 +9,7 @@ import (
 	"github.com/kyrremann/unparsd/models"
 	"gorm.io/driver/sqlite"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 func LoadJsonIntoDatabase(file string) (*gorm.DB, error) {
@@ -137,7 +138,12 @@ func InsertIntoDatabase(jsonCheckin models.JSONCheckin, db *gorm.DB) error {
 		},
 	}
 
-	res := db.Create(&dbCheckin)
+	res := db.
+		Clauses(clause.OnConflict{
+			Columns:   []clause.Column{{Name: "id"}},
+			DoUpdates: clause.Assignments(map[string]interface{}{"photo_url": dbCheckin.PhotoUrl}),
+		}).
+		Create(&dbCheckin)
 	return res.Error
 }
 
