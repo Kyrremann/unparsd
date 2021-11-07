@@ -46,6 +46,7 @@ func main() {
 		panic(err)
 	}
 
+	err = statistics.GenerateMonthlyAndSave(db, base)
 	if err != nil {
 		panic(err)
 	}

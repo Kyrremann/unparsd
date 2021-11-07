@@ -1,5 +1,6 @@
 gorm*.db
 untappd.json
+all_styles.json
 .vscode/
 .DS_Store
 output/
