@@ -7,6 +7,7 @@ import (
 
 	"github.com/PuerkitoBio/goquery"
 	"github.com/kyrremann/unparsd/models"
+	"github.com/kyrremann/unparsd/parsing"
 	"gorm.io/gorm"
 )
 
@@ -64,8 +65,18 @@ func getStylesFromUntappd() ([]string, error) {
 	return styles, nil
 }
 
-func MissingStyles(db *gorm.DB) ([]string, error) {
-	allStyles, err := getStylesFromUntappd()
+func getStylesDefinition(allStylesFile string) ([]string, error) {
+	if len(allStylesFile) == 0 {
+		return getStylesFromUntappd()
+	}
+
+	var styles []string
+	err := parsing.ParseJsonFile(allStylesFile, &styles)
+	return styles, err
+}
+
+func MissingStyles(db *gorm.DB, allStylesFile string) ([]string, error) {
+	allStyles, err := getStylesDefinition(allStylesFile)
 	if err != nil {
 		return nil, err
 	}

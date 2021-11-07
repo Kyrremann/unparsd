@@ -1,12 +1,19 @@
 package statistics
 
 import (
+	"os"
 	"github.com/kyrremann/unparsd/parsing"
 	"gorm.io/gorm"
 )
 
-func GenerateAndSave(db *gorm.DB, path string) error {
-	missingStyles, err := MissingStyles(db)
+func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
+	path = path + "/_data"
+	err := os.MkdirAll(path, 0755)
+	if err != nil {
+		return err
+	}
+
+	missingStyles, err := MissingStyles(db, allStyles)
 	if err != nil {
 		return err
 	}

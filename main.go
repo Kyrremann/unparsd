@@ -11,8 +11,9 @@ import (
 )
 
 var opts struct {
-	Untappd string `short:"u" long:"untappd" description:"" value-name:"untappd.json" default:"untappd.json"`
-	Output  string `short:"o" long:"output" description:"" value-name:"_data" default:"_data"`
+	Untappd   string `short:"u" long:"untappd" description:"" value-name:"untappd.json" default:"untappd.json"`
+	Output    string `short:"o" long:"output" description:"" value-name:"_data" default:"./"`
+	AllStyles string `short:"s" long:"all-styles" description:"" value-name:"all-styles.json"`
 }
 
 func main() {
@@ -21,7 +22,7 @@ func main() {
 		panic(err)
 	}
 
-	_, err = os.Stat(opts.Output)
+	err = os.MkdirAll(opts.Output, 0755)
 	if err != nil {
 		panic(err)
 	}
@@ -40,7 +41,11 @@ func main() {
 		panic(err)
 	}
 
-	err = statistics.GenerateAndSave(db, base)
+	err = statistics.GenerateAndSave(db, base, opts.AllStyles)
+	if err != nil {
+		panic(err)
+	}
+
 	if err != nil {
 		panic(err)
 	}
