@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/kyrremann/unparsd/models"
 	"gorm.io/driver/sqlite"
@@ -123,7 +124,7 @@ func InsertIntoDatabase(jsonCheckin models.JSONCheckin, db *gorm.DB) error {
 		Beer: models.Beer{
 			ID:                        jsonCheckin.BID,
 			Name:                      jsonCheckin.BeerName,
-			Type:                      jsonCheckin.BeerType,
+			Type:                      strings.TrimSpace(jsonCheckin.BeerType),
 			Abv:                       jsonCheckin.BeerAbv,
 			Ibu:                       jsonCheckin.BeerIbu,
 			GlobalWeightedRatingScore: jsonCheckin.GlobalWeightedRatingScore,
