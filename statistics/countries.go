@@ -27,6 +27,8 @@ func (iso ISO3166Alpha3) getISO3166Alpha3(country string) (string, error) {
 		return "MCO", nil
 	case "Wales", "England", "Scotland", "Northern Ireland":
 		return "GBR", nil
+	case "Surinam":
+		return "SUR", nil
 	}
 
 	gountry, err := iso.Query.FindCountryByName(country)
