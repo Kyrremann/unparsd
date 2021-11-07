@@ -4,9 +4,9 @@ package models
 type Brewery struct {
 	ID      int    `json:"id"`
 	Name    string `json:"name"`
-	City    string `json:"country"`
+	City    string `json:"-"`
 	State   string `json:"-"`
-	Country string `json:"-"`
+	Country string `json:"country"`
 	Beers   []Beer `json:"-"`
 }
 

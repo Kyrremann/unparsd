@@ -17,7 +17,8 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 	res := db.
 		Table("breweries").
 		Select("breweries.id as id," +
-			"breweries.name, country, city, state," +
+			"breweries.name," +
+			"breweries.country," +
 			"group_concat(beers.name) as list_of_beers," +
 			"count(checkins.beer_id) as checkins").
 		Joins("LEFT JOIN beers ON beers.brewery_id == breweries.id").
