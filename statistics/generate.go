@@ -93,7 +93,7 @@ banner: In {{ .Year}} I started drinking {{ .StartDay }}th of {{ .StartMonth }} 
   {% cycle 'end row' : '', '', '</div>' %}
 {% endfor %}
 {% cycle 'end row' : '', '</div>', '</div>' %}
-	`
+`
 	tmpl, err := template.New("monthly").Parse(view)
 	if err != nil {
 		return err
