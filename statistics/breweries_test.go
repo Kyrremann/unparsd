@@ -19,5 +19,5 @@ func TestBreweries(t *testing.T) {
 	for _, b := range breweries {
 		checkins += b.Checkins
 	}
-	assert.Equal(t, 125, checkins)
+	assert.Equal(t, 126, checkins)
 }

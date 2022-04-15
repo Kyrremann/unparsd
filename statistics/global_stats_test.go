@@ -13,11 +13,11 @@ func TestAllMy(t *testing.T) {
 
 	globalStats, err := AllMyStats(db)
 	assert.NoError(t, err)
-	assert.Equal(t, 125, globalStats.Checkins)
+	assert.Equal(t, 126, globalStats.Checkins)
 	assert.Equal(t, 112, globalStats.UniqueBeers)
 	assert.Equal(t, "2016-03-01", globalStats.StartDate)
 	assert.GreaterOrEqual(t, globalStats.DaysDrinking, 2128)
-	assert.LessOrEqual(t, 0.059, globalStats.BeersPerDay)
+	assert.LessOrEqual(t, 0.05, globalStats.BeersPerDay)
 	assert.Len(t, globalStats.Periodes, 5)
 	assert.Len(t, globalStats.Periodes["2016"].Months, 3)
 	assert.Equal(t, "March", globalStats.Periodes["2016"].Months[0].Month)

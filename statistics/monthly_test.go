@@ -13,6 +13,6 @@ func TestMonthly(t *testing.T) {
 
 	monthly, err := GetMonthlyBannerSumnmary(db)
 	assert.NoError(t, err)
-	assert.Len(t, monthly, 6)
+	assert.Len(t, monthly, 7)
 	assert.Equal(t, 2016, monthly[0].Year)
 }
