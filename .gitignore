@@ -2,6 +2,9 @@ gorm*.db
 untappd.json
 all_styles.json
 .vscode/
+.idea/
 .DS_Store
 output/
+_data
+_monthly
 unparsd
