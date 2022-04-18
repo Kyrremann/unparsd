@@ -2,14 +2,16 @@ package statistics
 
 import (
 	"github.com/kyrremann/unparsd/models"
+	"github.com/pariz/gountries"
 	"gorm.io/gorm"
 )
 
 type Brewery struct {
 	models.Brewery
 
-	ListOfBeers string `json:"beers"`
-	Checkins    int    `json:"checkins"`
+	ListOfBeers   string `json:"beers"`
+	Checkins      int    `json:"checkins"`
+	ISO3166Alpha2 string `json:"ISO3166Alpha2"`
 }
 
 func BreweryStats(db *gorm.DB) ([]Brewery, error) {
@@ -29,6 +31,10 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 		return nil, res.Error
 	}
 
+	iso := ISO3166Alpha2{
+		Query: gountries.New(),
+	}
+
 	for i, brewery := range breweries {
 		var beers string
 		res = db.
@@ -43,6 +49,12 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 		}
 
 		breweries[i].ListOfBeers = beers
+
+		ISO3166Alpha2, err := iso.getISO3166Alpha2(brewery.Country)
+		if err != nil {
+			return nil, err
+		}
+		breweries[i].ISO3166Alpha2 = ISO3166Alpha2
 	}
 
 	return breweries, nil
