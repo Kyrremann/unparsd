@@ -1,23 +1,23 @@
 module github.com/kyrremann/unparsd
 
-go 1.17
+go 1.18
 
 require (
-	gorm.io/driver/sqlite v1.1.5
-	gorm.io/gorm v1.21.15
+	gorm.io/driver/sqlite v1.3.1
+	gorm.io/gorm v1.23.4
 )
 
 require (
 	github.com/andybalholm/cascadia v1.3.1 // indirect
 	github.com/jinzhu/inflection v1.0.0 // indirect
-	github.com/jinzhu/now v1.1.2 // indirect
-	github.com/mattn/go-sqlite3 v1.14.8 // indirect
+	github.com/jinzhu/now v1.1.4 // indirect
+	github.com/mattn/go-sqlite3 v1.14.9 // indirect
 	golang.org/x/net v0.0.0-20211105192438-b53810dc28af // indirect
 	golang.org/x/sys v0.0.0-20210423082822-04245dca01da // indirect
 	gopkg.in/yaml.v2 v2.4.0 // indirect
 )
 
-require github.com/stretchr/testify v1.7.0
+require github.com/stretchr/testify v1.7.1
 
 require (
 	github.com/PuerkitoBio/goquery v1.8.0
