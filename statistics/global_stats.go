@@ -64,13 +64,12 @@ func daysInMonth(year, month string) (int, error) {
 	return time.Date(intYear, time.Month(intMonth)+1, 0, 0, 0, 0, 0, time.UTC).Day(), nil
 }
 
-func daysInYear(year string) (int, error) {
-	intYear, err := strconv.Atoi(year)
-	if err != nil {
-		return 0, err
-	}
+func daysTillNowInYear() int {
+	return time.Now().YearDay()
+}
 
-	return time.Date(intYear, time.December, 31, 0, 0, 0, 0, time.UTC).YearDay(), nil
+func daysInYear(year int) int {
+	return time.Date(year, time.December, 31, 0, 0, 0, 0, time.UTC).YearDay()
 }
 
 func MostCheckinsPerDay(db *gorm.DB, year, month string) (MostPerDay, error) {
@@ -176,6 +175,11 @@ func yearlyStats(db *gorm.DB) ([]PeriodeStats, error) {
 	}
 
 	for i, ps := range yearly {
+		intYear, err := strconv.Atoi(ps.Year)
+		if err != nil {
+			return nil, err
+		}
+
 		monthly, err := monthlyStats(db, ps.Year)
 		if err != nil {
 			return nil, err
@@ -195,11 +199,13 @@ func yearlyStats(db *gorm.DB) ([]PeriodeStats, error) {
 		}
 		yearly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
 
-		daysInYear, err := daysInYear(ps.Year)
-		if err != nil {
-			return nil, err
+		var days int
+		if time.Now().Year() == intYear {
+			days = daysTillNowInYear()
+		} else {
+			days = daysInYear(intYear)
 		}
-		yearly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(daysInYear))*100.00) / 100.00
+		yearly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(days))*100.00) / 100.00
 	}
 
 	return yearly, nil

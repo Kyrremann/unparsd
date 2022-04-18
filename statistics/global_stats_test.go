@@ -59,13 +59,15 @@ func TestDaysInMonth(t *testing.T) {
 }
 
 func TestDaysInYear(t *testing.T) {
-	days, err := daysInYear("2016")
-	assert.NoError(t, err)
+	days := daysInYear(2016)
 	assert.Equal(t, 366, days)
 
-	days, err = daysInYear("2017")
-	assert.NoError(t, err)
+	days = daysInYear(2017)
 	assert.Equal(t, 365, days)
+
+	days = daysTillNowInYear()
+	assert.Less(t, days, 366)
+	assert.Greater(t, days, 0)
 }
 
 func TestDaysSince(t *testing.T) {
