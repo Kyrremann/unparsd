@@ -22,11 +22,11 @@ func TestCountries(t *testing.T) {
 	query := gountries.New()
 	gCountry, err := query.FindCountryByName(brewery.Country)
 	assert.NoError(t, err)
-	assert.Equal(t, "USA", gCountry.Alpha3)
+	assert.Equal(t, "US", gCountry.Alpha2)
 
 	countries, err := CountryStats(db)
 	assert.NoError(t, err)
-	country := countries["AUS"]
+	country := countries[0]
 	assert.Equal(t, "Australia", country.Name)
 	assert.Equal(t, 1, country.Checkins)
 	assert.Equal(t, 1, country.Breweries)
