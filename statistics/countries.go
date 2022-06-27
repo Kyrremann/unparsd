@@ -53,6 +53,8 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country string) (string, error) {
 		return "GB", nil
 	case "Surinam":
 		return "SR", nil
+	case "North Macedonia":
+		return "MK", nil
 	}
 
 	gountry, err := iso.Query.FindCountryByName(country)
