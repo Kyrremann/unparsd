@@ -2,7 +2,7 @@ package parsing
 
 import (
 	"encoding/json"
-	"io/ioutil"
+	"io"
 	"os"
 	"strconv"
 	"strings"
@@ -38,7 +38,10 @@ func OpenInMemoryDatabase() (*gorm.DB, error) {
 		return nil, err
 	}
 
-	db.AutoMigrate(&models.Brewery{}, &models.Beer{}, &models.Venue{}, &models.Checkin{})
+	err = db.AutoMigrate(&models.Brewery{}, &models.Beer{}, &models.Venue{}, &models.Checkin{})
+	if err != nil {
+		return nil, err
+	}
 	return db, nil
 }
 
@@ -47,9 +50,14 @@ func ReadFile(file string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer jsonFile.Close()
+	defer func(jsonFile *os.File) {
+		err := jsonFile.Close()
+		if err != nil {
 
-	bytes, err := ioutil.ReadAll(jsonFile)
+		}
+	}(jsonFile)
+
+	bytes, err := io.ReadAll(jsonFile)
 	if err != nil {
 		return nil, err
 	}

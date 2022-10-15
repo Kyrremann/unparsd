@@ -13,7 +13,8 @@ func TestOpenInMemoryDatabase(t *testing.T) {
 	db, err := OpenInMemoryDatabase()
 	assert.NoError(t, err)
 
-	db.AutoMigrate(&models.Brewery{}, &models.Beer{}, &models.Venue{}, &models.Checkin{})
+	err = db.AutoMigrate(&models.Brewery{}, &models.Beer{}, &models.Venue{}, &models.Checkin{})
+	assert.NoError(t, err)
 
 	checkin := models.Checkin{
 		ID:             283107883,

@@ -2,6 +2,7 @@ package statistics
 
 import (
 	"fmt"
+	"io"
 	"net/http"
 	"strings"
 
@@ -45,7 +46,13 @@ func getStylesFromUntappd() ([]string, error) {
 		return nil, err
 	}
 
-	defer resp.Body.Close()
+	defer func(Body io.ReadCloser) {
+		err := Body.Close()
+		if err != nil {
+
+		}
+	}(resp.Body)
+
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("status code error: %d %s", resp.StatusCode, resp.Status)
 	}
