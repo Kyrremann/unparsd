@@ -5,7 +5,6 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/kyrremann/unparsd/models"
 	"gorm.io/gorm"
 )
 
@@ -72,37 +71,6 @@ func daysInYear(year int) int {
 	return time.Date(year, time.December, 31, 0, 0, 0, 0, time.UTC).YearDay()
 }
 
-func MostCheckinsPerDay(db *gorm.DB, year, month string) (MostPerDay, error) {
-	return mostPerDay(db, "count(id) as count,", year, month)
-}
-
-func MostUniqueBeersPerDay(db *gorm.DB, year, month string) (MostPerDay, error) {
-	return mostPerDay(db, "count(DISTINCT(beer_id)) as count,", year, month)
-}
-
-func mostPerDay(db *gorm.DB, selectCounter, year, month string) (MostPerDay, error) {
-	var mostPerDay MostPerDay
-	tx := db.
-		Model(models.Checkin{}).
-		Select(selectCounter +
-			"strftime('%Y-%m-%d', checkins.checkin_at) as date," +
-			"strftime('%Y', checkins.checkin_at) as year," +
-			"strftime('%m', checkins.checkin_at) as month").
-		Group("date").
-		Order("count DESC").
-		Order("date ASC")
-
-	if len(month) > 0 {
-		tx.Where("year = ? AND month = ?", year, month)
-	} else {
-		tx.Where("year = ?", year)
-	}
-
-	res := tx.First(&mostPerDay)
-
-	return mostPerDay, res.Error
-}
-
 func periodeStats(db *gorm.DB, groupBy, year string) ([]PeriodeStats, error) {
 	var periodeStats []PeriodeStats
 	tx := db.
@@ -140,18 +108,6 @@ func monthlyStats(db *gorm.DB, year string) ([]PeriodeStats, error) {
 	}
 
 	for i, ps := range monthly {
-		mostCheckinsPerDay, err := MostCheckinsPerDay(db, year, ps.Month)
-		if err != nil {
-			return nil, err
-		}
-
-		monthly[i].MostCheckinsPerDay = mostCheckinsPerDay
-		mostUniqueBeersPerDay, err := MostUniqueBeersPerDay(db, year, ps.Month)
-		if err != nil {
-			return nil, err
-		}
-		monthly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
-
 		daysInMonth, err := daysInMonth(year, ps.Month)
 		if err != nil {
 			return nil, err
@@ -186,18 +142,6 @@ func yearlyStats(db *gorm.DB) ([]PeriodeStats, error) {
 		}
 		yearly[i].Months = monthly
 		yearly[i].Month = ""
-
-		mostCheckinsPerDay, err := MostCheckinsPerDay(db, ps.Year, "")
-		if err != nil {
-			return nil, err
-		}
-
-		yearly[i].MostCheckinsPerDay = mostCheckinsPerDay
-		mostUniqueBeersPerDay, err := MostUniqueBeersPerDay(db, ps.Year, "")
-		if err != nil {
-			return nil, err
-		}
-		yearly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
 
 		var days int
 		if time.Now().Year() == intYear {
