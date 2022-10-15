@@ -15,9 +15,19 @@ func TestBreweries(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, breweries, 80)
 
-	brewery := breweries[0]
-	assert.Equal(t, "United States", brewery.Country)
-	assert.Equal(t, "US", brewery.ISO3166Alpha2)
+	var brewery Brewery
+	for _, b := range breweries {
+		if b.Name == "Ting Tar Tid" {
+			brewery = b
+			break
+		}
+	}
+
+	assert.Equal(t, "Ting Tar Tid", brewery.Name)
+	assert.Equal(t, "Norway", brewery.Country)
+	assert.Equal(t, "NO", brewery.ISO3166Alpha2)
+	sortedBeers := "En Sjakkmester Weissbier\nEplegløgg\nKaffekværna - 100g\nKaffekværna - 250g\nKaffekværna - Base\nKværna\nMer De Montagne\nRustikk Koriander\nSingle-hop Lucky Jack"
+	assert.Equal(t, sortedBeers, brewery.ListOfBeers)
 
 	var checkins = 0
 	for _, b := range breweries {

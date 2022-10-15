@@ -4,6 +4,8 @@ import (
 	"github.com/kyrremann/unparsd/models"
 	"github.com/pariz/gountries"
 	"gorm.io/gorm"
+	"sort"
+	"strings"
 )
 
 type Brewery struct {
@@ -36,19 +38,21 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 	}
 
 	for i, brewery := range breweries {
-		var beers string
+		var beers []string
 		res = db.
 			Table("beers").
 			Distinct("name").
-			Select("group_concat(name, '\n') as list_of_beers").
+			Select("name").
 			Where("beers.brewery_id == ?", brewery.ID).
+			Order("beers.name ASC").
 			Find(&beers)
 
 		if res.Error != nil {
 			return nil, res.Error
 		}
 
-		breweries[i].ListOfBeers = beers
+		sort.Strings(beers)
+		breweries[i].ListOfBeers = strings.Join(beers, "\n")
 
 		ISO3166Alpha2, err := iso.getISO3166Alpha2(brewery.Country)
 		if err != nil {
