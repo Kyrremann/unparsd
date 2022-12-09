@@ -1,6 +1,6 @@
 module github.com/kyrremann/unparsd
 
-go 1.18
+go 1.19
 
 require (
 	gorm.io/driver/sqlite v1.4.3
