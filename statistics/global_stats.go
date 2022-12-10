@@ -9,12 +9,12 @@ import (
 )
 
 type GlobalStats struct {
-	Checkins      int                     `json:"checkins"`
-	UniqueBeers   int                     `json:"unique_beers"`
-	StartDate     string                  `json:"start_date"`
-	DaysDrinking  int                     `gorm:"-" json:"days_drinking"`
-	BeersPerDay   float64                 `gorm:"-" json:"beers_per_day"`
-	Periodes      map[string]PeriodeStats `gorm:"-" json:"years"`
+	Checkins      int                    `json:"checkins"`
+	UniqueBeers   int                    `json:"unique_beers"`
+	StartDate     string                 `json:"start_date"`
+	DaysDrinking  int                    `gorm:"-" json:"days_drinking"`
+	BeersPerDay   float64                `gorm:"-" json:"beers_per_day"`
+	Periods       map[string]PeriodStats `gorm:"-" json:"years"`
 	GeneratedDate time.Time
 }
 
@@ -23,23 +23,23 @@ type MostPerDay struct {
 	Date  string `json:"date"`
 }
 
-type PeriodeStats struct {
-	Checkins              int            `json:"checkins"`
-	UniqueBreweries       int            `json:"unique_breweries"`
-	BreweryCountries      int            `json:"brewery_countries"`
-	UniqueVenues          int            `json:"unique_venues"`
-	VenueCountries        int            `json:"venue_countries"`
-	UniqueBeers           int            `json:"unique_beers"`
-	MaxAbv                float64        `json:"max_abv"`
-	AvgAbv                float64        `json:"avg_abv"`
-	Styles                int            `json:"styles"`
-	StartDate             string         `json:"start_date"`
-	Month                 string         `json:"month,omitempty"`
-	Year                  string         `json:"year"`
-	Months                []PeriodeStats `gorm:"-" json:"months,omitempty"`
-	MostCheckinsPerDay    MostPerDay     `gorm:"-" json:"most_checkins_per_day"`
-	MostUniqueBeersPerDay MostPerDay     `gorm:"-" json:"most_unique_beers_per_day"`
-	BeersPerDay           float64        `gorm:"-" json:"beers_per_day"`
+type PeriodStats struct {
+	Checkins              int           `json:"checkins"`
+	UniqueBreweries       int           `json:"unique_breweries"`
+	BreweryCountries      int           `json:"brewery_countries"`
+	UniqueVenues          int           `json:"unique_venues"`
+	VenueCountries        int           `json:"venue_countries"`
+	UniqueBeers           int           `json:"unique_beers"`
+	MaxAbv                float64       `json:"max_abv"`
+	AvgAbv                float64       `json:"avg_abv"`
+	Styles                int           `json:"styles"`
+	StartDate             string        `json:"start_date"`
+	Month                 string        `json:"month,omitempty"`
+	Year                  string        `json:"year"`
+	Months                []PeriodStats `gorm:"-" json:"months,omitempty"`
+	MostCheckinsPerDay    MostPerDay    `gorm:"-" json:"most_checkins_per_day"`
+	MostUniqueBeersPerDay MostPerDay    `gorm:"-" json:"most_unique_beers_per_day"`
+	BeersPerDay           float64       `gorm:"-" json:"beers_per_day"`
 }
 
 func getMonthAsString(month string) (string, error) {
@@ -72,8 +72,8 @@ func daysInYear(year int) int {
 	return time.Date(year, time.December, 31, 0, 0, 0, 0, time.UTC).YearDay()
 }
 
-func periodeStats(db *gorm.DB, groupBy, year string) ([]PeriodeStats, error) {
-	var periodeStats []PeriodeStats
+func periodStats(db *gorm.DB, groupBy, year string) ([]PeriodStats, error) {
+	var periodStats []PeriodStats
 	tx := db.
 		Table("checkins").
 		Select("count(checkins.id) as checkins," +
@@ -97,13 +97,13 @@ func periodeStats(db *gorm.DB, groupBy, year string) ([]PeriodeStats, error) {
 		tx.Where("year", year)
 	}
 
-	res := tx.Find(&periodeStats)
+	res := tx.Find(&periodStats)
 
-	return periodeStats, res.Error
+	return periodStats, res.Error
 }
 
-func monthlyStats(db *gorm.DB, year string) ([]PeriodeStats, error) {
-	monthly, err := periodeStats(db, "month", year)
+func monthlyStats(db *gorm.DB, year string) ([]PeriodStats, error) {
+	monthly, err := periodStats(db, "month", year)
 	if err != nil {
 		return nil, err
 	}
@@ -125,8 +125,8 @@ func monthlyStats(db *gorm.DB, year string) ([]PeriodeStats, error) {
 	return monthly, nil
 }
 
-func yearlyStats(db *gorm.DB) ([]PeriodeStats, error) {
-	yearly, err := periodeStats(db, "year", "")
+func yearlyStats(db *gorm.DB) ([]PeriodStats, error) {
+	yearly, err := periodStats(db, "year", "")
 	if err != nil {
 		return nil, err
 	}
@@ -183,14 +183,14 @@ func AllMyStats(db *gorm.DB) (GlobalStats, error) {
 		return GlobalStats{}, res.Error
 	}
 
-	periodes, err := yearlyStats(db)
+	periods, err := yearlyStats(db)
 	if err != nil {
 		return GlobalStats{}, err
 	}
 
-	globalStat.Periodes = make(map[string]PeriodeStats)
-	for _, ps := range periodes {
-		globalStat.Periodes[ps.Year] = ps
+	globalStat.Periods = make(map[string]PeriodStats)
+	for _, ps := range periods {
+		globalStat.Periods[ps.Year] = ps
 	}
 
 	daysDrinking, err := daysSince(globalStat.StartDate)
