@@ -9,12 +9,13 @@ import (
 )
 
 type GlobalStats struct {
-	Checkins     int                     `json:"checkins"`
-	UniqueBeers  int                     `json:"unique_beers"`
-	StartDate    string                  `json:"start_date"`
-	DaysDrinking int                     `gorm:"-" json:"days_drinking"`
-	BeersPerDay  float64                 `gorm:"-" json:"beers_per_day"`
-	Periodes     map[string]PeriodeStats `gorm:"-" json:"years"`
+	Checkins      int                     `json:"checkins"`
+	UniqueBeers   int                     `json:"unique_beers"`
+	StartDate     string                  `json:"start_date"`
+	DaysDrinking  int                     `gorm:"-" json:"days_drinking"`
+	BeersPerDay   float64                 `gorm:"-" json:"beers_per_day"`
+	Periodes      map[string]PeriodeStats `gorm:"-" json:"years"`
+	GeneratedDate time.Time
 }
 
 type MostPerDay struct {
@@ -198,6 +199,7 @@ func AllMyStats(db *gorm.DB) (GlobalStats, error) {
 	}
 	globalStat.DaysDrinking = daysDrinking
 	globalStat.BeersPerDay = math.Round((float64(globalStat.Checkins)/float64(daysDrinking))*100.00) / 100.00
+	globalStat.GeneratedDate = time.Now()
 
 	return globalStat, nil
 }
