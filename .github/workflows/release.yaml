@@ -30,7 +30,7 @@ jobs:
           changelog="${changelog//$'\n'/'%0A' - }"
           changelog=" - ${changelog//$'\r'/'%0D'}"
 
-          echo "::set-output name=changelog::$changelog"
+          echo "changelog=$changelog" >> $GITHUB_OUTPUT
       - uses: softprops/action-gh-release@v1
         with:
           body: ${{ steps.changelog.outputs.changelog }}
