@@ -54,7 +54,7 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 		sort.Strings(beers)
 		breweries[i].ListOfBeers = strings.Join(beers, "\n")
 
-		ISO3166Alpha2, err := iso.getISO3166Alpha2(brewery.Country)
+		ISO3166Alpha2, err := iso.getISO3166Alpha2(brewery.Country, brewery.State)
 		if err != nil {
 			return nil, err
 		}
