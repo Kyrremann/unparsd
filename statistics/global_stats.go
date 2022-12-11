@@ -15,7 +15,7 @@ type GlobalStats struct {
 	DaysDrinking  int                    `gorm:"-" json:"days_drinking"`
 	BeersPerDay   float64                `gorm:"-" json:"beers_per_day"`
 	Periods       map[string]PeriodStats `gorm:"-" json:"years"`
-	GeneratedDate time.Time
+	GeneratedDate time.Time              `json:"generated_date"`
 }
 
 type MostPerDay struct {
