@@ -23,6 +23,7 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 		Select("breweries.id as id," +
 			"breweries.name," +
 			"breweries.country," +
+			"breweries.state," +
 			"count(checkins.beer_id) as checkins").
 		Joins("LEFT JOIN beers ON beers.brewery_id == breweries.id").
 		Joins("LEFT JOIN checkins ON beers.id == checkins.beer_id").
