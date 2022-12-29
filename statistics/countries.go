@@ -60,6 +60,28 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 		switch state {
 		case "Guyane":
 			return "GF", nil
+		case "French Polynesia":
+			return "PF", nil
+		case "The French Southern and Antarctic Lands":
+			return "TF", nil
+		case "Guadeloupe":
+			return "GP", nil
+		case "Martinique":
+			return "MQ", nil
+		case "The Department of Mayotte":
+			return "YT", nil
+		case "New Caledonia":
+			return "NC", nil
+		case "Réunion":
+			return "RE", nil
+		case "The Collectivity of Saint-Barthélemy":
+			return "BL", nil
+		case "The Collectivity of Saint-Martin":
+			return "MF", nil
+		case " 	The Overseas Collectivity of Saint-Pierre and Miquelon":
+			return "PM", nil
+		case "The Territory of the Wallis and Futuna Islands":
+			return "WF", nil
 		default:
 			break
 		}
