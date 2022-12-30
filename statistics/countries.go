@@ -136,8 +136,6 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 			return "BV", nil
 		case "Svalbard and Jan Mayen":
 			return "SJ", nil
-		default:
-			break
 		}
 	}
 
