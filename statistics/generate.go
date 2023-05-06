@@ -99,7 +99,7 @@ banner: In {{ .Year}} I started drinking {{ .StartDay }}th of {{ .StartMonth }} 
 		return err
 	}
 
-	monthlyData, err := GetMonthlyBannerSumnmary(db)
+	monthlyData, err := GetMonthlyBannerSummary(db)
 	if err != nil {
 		return err
 	}

@@ -16,7 +16,7 @@ type Monthly struct {
 	BeersPerDay float64
 }
 
-func GetMonthlyBannerSumnmary(db *gorm.DB) ([]Monthly, error) {
+func GetMonthlyBannerSummary(db *gorm.DB) ([]Monthly, error) {
 	var monthly []Monthly
 	res := db.
 		Model(models.Checkin{}).
