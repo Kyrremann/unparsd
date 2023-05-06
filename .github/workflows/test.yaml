@@ -3,7 +3,7 @@ name: Test unparsd
 on: push
 
 jobs:
-  releaser:
+  test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
