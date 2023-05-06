@@ -44,18 +44,6 @@ type ISO3166Alpha2 struct {
 
 func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error) {
 	switch country {
-	case "China / People's Republic of China":
-		return "CN", nil
-	case "Palestinian Territories":
-		return "PS", nil
-	case "Principality of Monaco":
-		return "MC", nil
-	case "Wales", "England", "Scotland", "Northern Ireland":
-		return "GB", nil
-	case "Surinam":
-		return "SR", nil
-	case "North Macedonia":
-		return "MK", nil
 	case "Australia":
 		switch state {
 		case "The Territory of Christmas Island":
@@ -74,6 +62,8 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 		case "The Macao Special Administrative Region of China":
 			return "MO", nil
 		}
+	case "China / People's Republic of China":
+		return "CN", nil
 	case "Denmark":
 		switch state {
 		case "The Faroe Islands":
@@ -81,6 +71,8 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 		case "Kalaallit Nunaat":
 			return "GL", nil
 		}
+	case "England", "Northern Ireland", "Scotland", "Wales":
+		return "GB", nil
 	case "Finland":
 		switch state {
 		case "Åland":
@@ -137,6 +129,8 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 		case "Tokelau":
 			return "TK", nil
 		}
+	case "North Macedonia":
+		return "MK", nil
 	case "Norway":
 		switch state {
 		case "Bouvet Island":
@@ -144,6 +138,12 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 		case "Svalbard and Jan Mayen":
 			return "SJ", nil
 		}
+	case "Palestinian Territories":
+		return "PS", nil
+	case "Principality of Monaco":
+		return "MC", nil
+	case "Surinam":
+		return "SR", nil
 	}
 
 	gountry, err := iso.Query.FindCountryByName(country)
