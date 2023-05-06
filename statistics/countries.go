@@ -187,35 +187,3 @@ func CountryStats(db *gorm.DB) ([]Country, error) {
 
 	return countries, nil
 }
-
-func CountryStateStats(db *gorm.DB) (map[string]State, error) {
-	var dbStates []State
-	res := db.
-		Model(models.Checkin{}).
-		Select("count(checkins.id) as checkins," +
-			"count(DISTINCT(breweries.id)) as breweries," +
-			"breweries.country as country," +
-			"breweries.state as name").
-		Joins("LEFT JOIN beers on checkins.beer_id == beers.id").
-		Joins("LEFT JOIN breweries on beers.brewery_id == breweries.id").
-		Group("breweries.state").
-		Find(&dbStates)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	iso := ISO3166Alpha2{
-		Query: gountries.New(),
-	}
-	states := make(map[string]State)
-	for _, c := range dbStates {
-		ISO3166Alpha2, err := iso.getISO3166Alpha2(c.Country, c.Name)
-		if err != nil {
-			return nil, err
-		}
-
-		states[ISO3166Alpha2] = c
-	}
-
-	return states, nil
-}
