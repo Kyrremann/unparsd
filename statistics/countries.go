@@ -66,22 +66,26 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 			return "HM", nil
 		case "The Territory of Norfolk Island":
 			return "NF", nil
+		}
 	case "China":
 		switch state {
 		case "The Hong Kong Special Administrative Region of China":
 			return "HK", nil
 		case "The Macao Special Administrative Region of China":
 			return "MO", nil
+		}
 	case "Denmark":
 		switch state {
 		case "The Faroe Islands":
 			return "FO", nil
 		case "Kalaallit Nunaat":
 			return "GL", nil
+		}
 	case "Finland":
 		switch state {
 		case "Åland":
 			return "AX", nil
+		}
 	case "France":
 		switch state {
 		case "Guyane":
@@ -108,6 +112,7 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 			return "PM", nil
 		case "The Territory of the Wallis and Futuna Islands":
 			return "WF", nil
+		}
 	case "Netherlands":
 		switch state {
 		case "Aruba":
@@ -122,6 +127,7 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 			return "BQ", nil
 		case "Sint Maarten":
 			return "SQ", nil
+		}
 	case "New Zealand":
 		switch state {
 		case "The Cook Islands":
@@ -130,6 +136,7 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 			return "NU", nil
 		case "Tokelau":
 			return "TK", nil
+		}
 	case "Norway":
 		switch state {
 		case "Bouvet Island":
@@ -143,6 +150,7 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 	if err != nil {
 		return "", err
 	}
+
 	return gountry.Alpha2, nil
 }
 
