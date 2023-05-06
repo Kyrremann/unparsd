@@ -119,7 +119,7 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 			return "AW", nil
 		case "Bonaire":
 			return "BQ", nil
-		case "Curaçao":
+		case "Curaçao", "Curacao":
 			return "CW", nil
 		case "Saba":
 			return "BQ", nil
