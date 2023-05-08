@@ -64,6 +64,8 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 		}
 	case "China / People's Republic of China":
 		return "CN", nil
+	case "Curaçao", "Curacao":
+		return "CW", nil
 	case "Denmark":
 		switch state {
 		case "The Faroe Islands":
