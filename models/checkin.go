@@ -41,7 +41,7 @@ type JSONCheckin struct {
 	GlobalWeightedRatingScore float32 `json:"global_weighted_rating_score"`
 	PhotoUrl                  string  `json:"photo_url"`
 	PurchaseVenue             string  `json:"purchase_venue"`
-	RatingScore               float32 `json:"rating_score"`
+	RatingScore               any     `json:"rating_score"`
 	ServingTypes              string  `json:"serving_types"`
 	TaggedFriends             string  `json:"tagged_friends"`
 	TotalComments             int     `json:"total_comments"`
