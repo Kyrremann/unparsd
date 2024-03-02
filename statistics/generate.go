@@ -11,8 +11,7 @@ import (
 
 func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 	path = path + "/_data"
-	err := os.MkdirAll(path, 0755)
-	if err != nil {
+	if err := os.MkdirAll(path, 0o755); err != nil {
 		return err
 	}
 
@@ -21,8 +20,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	err = parsing.SaveDataToJsonFile(missingStyles, path+"/missing_styles.json")
-	if err != nil {
+	if err := parsing.SaveDataToJsonFile(missingStyles, path+"/missing_styles.json"); err != nil {
 		return err
 	}
 
@@ -31,8 +29,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	err = parsing.SaveDataToJsonFile(distinctStyles, path+"/styles.json")
-	if err != nil {
+	if err := parsing.SaveDataToJsonFile(distinctStyles, path+"/styles.json"); err != nil {
 		return err
 	}
 
@@ -41,8 +38,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	err = parsing.SaveDataToJsonFile(breweries, path+"/breweries.json")
-	if err != nil {
+	if err := parsing.SaveDataToJsonFile(breweries, path+"/breweries.json"); err != nil {
 		return err
 	}
 
@@ -51,8 +47,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	err = parsing.SaveDataToJsonFile(beers, path+"/beers.json")
-	if err != nil {
+	if err := parsing.SaveDataToJsonFile(beers, path+"/beers.json"); err != nil {
 		return err
 	}
 
@@ -61,8 +56,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	err = parsing.SaveDataToJsonFile(countries, path+"/countries.json")
-	if err != nil {
+	if err := parsing.SaveDataToJsonFile(countries, path+"/countries.json"); err != nil {
 		return err
 	}
 
@@ -71,13 +65,25 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	err = parsing.SaveDataToJsonFile(allMyStats, path+"/allmy.json")
-	return err
+	if err := parsing.SaveDataToJsonFile(allMyStats, path+"/allmy.json"); err != nil {
+		return err
+	}
+
+	checkinsByDay, err := CheckinsByDay(db)
+	if err != nil {
+		return err
+	}
+
+	if err = parsing.SaveDataToJsonFile(checkinsByDay, path+"/checkins_by_day.json"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func GenerateMonthlyAndSave(db *gorm.DB, path string) error {
 	path = path + "/_monthly"
-	err := os.MkdirAll(path, 0755)
+	err := os.MkdirAll(path, 0o755)
 	if err != nil {
 		return err
 	}
