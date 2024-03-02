@@ -33,8 +33,8 @@ func TestOpenInMemoryDatabase(t *testing.T) {
 			City:    "",
 			State:   "",
 			Country: "Norge",
-			Lat:     "59.929",
-			Lng:     "10.7183",
+			Lat:     59.929,
+			Lng:     10.7183,
 		},
 		Beer: models.Beer{
 			ID:                        5939,
@@ -99,7 +99,7 @@ func TestParseJSON(t *testing.T) {
 
 func testJsonImport(t *testing.T, checkin models.JSONCheckin) {
 	assert.Equal(t, 1, checkin.TotalToasts)
-	assert.Equal(t, "3", checkin.RatingScore)
+	assert.Equal(t, float32(3), checkin.RatingScore)
 	assert.Equal(t, 283107883, checkin.CheckinID)
 	assert.Equal(t, "Fin begynnerøl.", checkin.Comment)
 	assert.Equal(t, "1664", checkin.BeerName)

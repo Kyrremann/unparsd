@@ -5,6 +5,6 @@ type Venue struct {
 	City    string
 	State   string
 	Country string
-	Lat     string
-	Lng     string
+	Lat     float32
+	Lng     float32
 }
