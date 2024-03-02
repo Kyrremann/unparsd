@@ -2,6 +2,7 @@ package parsing
 
 import (
 	"encoding/json"
+	"fmt"
 	"io"
 	"os"
 	"strings"
@@ -100,7 +101,7 @@ func insertAllIntoDatabase(checkins []models.JSONCheckin, db *gorm.DB) error {
 func InsertIntoDatabase(jsonCheckin models.JSONCheckin, db *gorm.DB) error {
 	dbCheckin := models.Checkin{
 		ID:             jsonCheckin.CheckinID,
-		RatingScore:    jsonCheckin.RatingScore,
+		RatingScore:    convertRatingScore(jsonCheckin.RatingScore),
 		Comment:        jsonCheckin.Comment,
 		FlavorProfiles: jsonCheckin.FlavorProfiles,
 		ServingTypes:   jsonCheckin.ServingTypes,
@@ -143,6 +144,18 @@ func InsertIntoDatabase(jsonCheckin models.JSONCheckin, db *gorm.DB) error {
 		}).
 		Create(&dbCheckin)
 	return res.Error
+}
+
+func convertRatingScore(score any) float32 {
+	switch v := score.(type) {
+	case float64:
+		return float32(v)
+	case string:
+		return 0
+	default:
+		fmt.Printf("unexpected type %T", v)
+		return 0
+	}
 }
 
 func SaveDataToJsonFile(v interface{}, fileName string) error {

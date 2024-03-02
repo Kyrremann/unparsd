@@ -67,6 +67,7 @@ func testDatabaseModels(t *testing.T, db *gorm.DB) {
 	assert.Equal(t, "1664", c.Beer.Name)
 	assert.Equal(t, "Kronenbourg Brewery", c.Beer.Brewery.Name)
 	assert.Equal(t, "Mad Fork", c.Venue.Name)
+	assert.Equal(t, float32(3), c.RatingScore)
 
 	var b models.Beer
 	res = db.Preload("Brewery").First(&b, 5939)
@@ -99,7 +100,7 @@ func TestParseJSON(t *testing.T) {
 
 func testJsonImport(t *testing.T, checkin models.JSONCheckin) {
 	assert.Equal(t, 1, checkin.TotalToasts)
-	assert.Equal(t, float32(3), checkin.RatingScore)
+	assert.Equal(t, float64(3), checkin.RatingScore)
 	assert.Equal(t, 283107883, checkin.CheckinID)
 	assert.Equal(t, "Fin begynnerøl.", checkin.Comment)
 	assert.Equal(t, "1664", checkin.BeerName)
