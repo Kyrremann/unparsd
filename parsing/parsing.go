@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"io"
 	"os"
-	"strconv"
 	"strings"
 
 	"github.com/kyrremann/unparsd/models"
@@ -53,7 +52,6 @@ func ReadFile(file string) ([]byte, error) {
 	defer func(jsonFile *os.File) {
 		err := jsonFile.Close()
 		if err != nil {
-
 		}
 	}(jsonFile)
 
@@ -100,18 +98,9 @@ func insertAllIntoDatabase(checkins []models.JSONCheckin, db *gorm.DB) error {
 }
 
 func InsertIntoDatabase(jsonCheckin models.JSONCheckin, db *gorm.DB) error {
-	var ratingScore float32
-	if len(jsonCheckin.RatingScore) > 0 {
-		ratingScore64, err := strconv.ParseFloat(jsonCheckin.RatingScore, 32)
-		if err != nil {
-			return err
-		}
-		ratingScore = float32(ratingScore64)
-	}
-
 	dbCheckin := models.Checkin{
 		ID:             jsonCheckin.CheckinID,
-		RatingScore:    ratingScore,
+		RatingScore:    jsonCheckin.RatingScore,
 		Comment:        jsonCheckin.Comment,
 		FlavorProfiles: jsonCheckin.FlavorProfiles,
 		ServingTypes:   jsonCheckin.ServingTypes,
