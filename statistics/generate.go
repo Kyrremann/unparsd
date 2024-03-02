@@ -71,8 +71,20 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	err = parsing.SaveDataToJsonFile(allMyStats, path+"/allmy.json")
-	return err
+	if err := parsing.SaveDataToJsonFile(allMyStats, path+"/allmy.json"); err != nil {
+		return err
+	}
+
+	checkinsByDay, err := CheckinsByDay(db)
+	if err != nil {
+		return err
+	}
+
+	if err = parsing.SaveDataToJsonFile(checkinsByDay, path+"/checkins_by_day.json"); err != nil {
+		return err
+	}
+
+	return nil
 }
 
 func GenerateMonthlyAndSave(db *gorm.DB, path string) error {
