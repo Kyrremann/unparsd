@@ -1,6 +1,9 @@
 package statistics
 
 import (
+	"slices"
+	"strings"
+
 	"github.com/kyrremann/unparsd/models"
 	"github.com/pariz/gountries"
 	"gorm.io/gorm"
@@ -195,6 +198,10 @@ func CountryStats(db *gorm.DB) ([]Country, error) {
 	for _, c := range countries {
 		countriesSlice = append(countriesSlice, c)
 	}
+
+	slices.SortFunc(countriesSlice, func(a, b Country) int {
+		return strings.Compare(a.Name, b.Name)
+	})
 
 	return countriesSlice, nil
 }
