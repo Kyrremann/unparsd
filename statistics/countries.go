@@ -107,6 +107,8 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 		case "The Territory of the Wallis and Futuna Islands":
 			return "WF", nil
 		}
+	case "Guyane":
+		return "GF", nil
 	case "Netherlands":
 		switch state {
 		case "Aruba":
