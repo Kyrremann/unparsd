@@ -38,120 +38,134 @@ type ISO3166Alpha2 struct {
 	Query *gountries.Query
 }
 
-func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error) {
+func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, string, error) {
+	var alpha2 string
+
 	switch country {
 	case "Australia":
 		switch state {
 		case "The Territory of Christmas Island":
-			return "CX", nil
+			alpha2 = "CX"
 		case "The Territory of Cocos (Keeling) Islands":
-			return "CC", nil
+			alpha2 = "CC"
 		case "The Territory of Heard Island and McDonald Islands":
-			return "HM", nil
+			alpha2 = "HM"
 		case "The Territory of Norfolk Island":
-			return "NF", nil
+			alpha2 = "NF"
 		}
 	case "China":
 		switch state {
 		case "The Hong Kong Special Administrative Region of China":
-			return "HK", nil
+			alpha2 = "HK"
 		case "The Macao Special Administrative Region of China":
-			return "MO", nil
+			alpha2 = "MO"
 		}
 	case "China / People's Republic of China":
-		return "CN", nil
+		alpha2 = "CN"
 	case "Curaçao", "Curacao":
-		return "CW", nil
+		alpha2 = "CW"
 	case "Denmark":
 		switch state {
 		case "The Faroe Islands":
-			return "FO", nil
+			alpha2 = "FO"
 		case "Kalaallit Nunaat":
-			return "GL", nil
+			alpha2 = "GL"
 		}
 	case "England", "Northern Ireland", "Scotland", "Wales":
-		return "GB", nil
+		alpha2 = "GB"
 	case "Finland":
 		switch state {
 		case "Åland":
-			return "AX", nil
+			alpha2 = "AX"
 		}
 	case "France":
 		switch state {
 		case "Guyane":
-			return "GF", nil
+			alpha2 = "GF"
+			country = "Guyane"
 		case "French Polynesia":
-			return "PF", nil
+			alpha2 = "PF"
 		case "The French Southern and Antarctic Lands":
-			return "TF", nil
+			alpha2 = "TF"
 		case "Guadeloupe":
-			return "GP", nil
+			alpha2 = "GP"
 		case "Martinique":
-			return "MQ", nil
+			alpha2 = "MQ"
 		case "The Department of Mayotte":
-			return "YT", nil
+			alpha2 = "YT"
 		case "New Caledonia":
-			return "NC", nil
+			alpha2 = "NC"
 		case "Réunion", "La Réunion":
-			return "RE", nil
+			alpha2 = "RE"
+			country = "Réunion"
 		case "The Collectivity of Saint-Barthélemy":
-			return "BL", nil
+			alpha2 = "BL"
 		case "The Collectivity of Saint-Martin":
-			return "MF", nil
+			alpha2 = "MF"
 		case "The Overseas Collectivity of Saint-Pierre and Miquelon":
-			return "PM", nil
+			alpha2 = "PM"
 		case "The Territory of the Wallis and Futuna Islands":
-			return "WF", nil
+			alpha2 = "WF"
 		}
 	case "Guyane":
-		return "GF", nil
+		alpha2 = "GF"
 	case "Netherlands":
 		switch state {
 		case "Aruba":
-			return "AW", nil
+			alpha2 = "AW"
 		case "Bonaire":
-			return "BQ", nil
+			alpha2 = "BQ"
 		case "Curaçao", "Curacao":
-			return "CW", nil
+			alpha2 = "CW"
 		case "Saba":
-			return "BQ", nil
+			alpha2 = "BQ"
 		case "Sint Eustatius":
-			return "BQ", nil
+			alpha2 = "BQ"
 		case "Sint Maarten":
-			return "SQ", nil
+			alpha2 = "SQ"
 		}
 	case "New Zealand":
 		switch state {
 		case "The Cook Islands":
-			return "CK", nil
+			alpha2 = "CK"
 		case "Niue":
-			return "NU", nil
+			alpha2 = "NU"
 		case "Tokelau":
-			return "TK", nil
+			alpha2 = "TK"
 		}
 	case "North Macedonia":
-		return "MK", nil
+		alpha2 = "MK"
 	case "Norway":
 		switch state {
 		case "Bouvet Island":
-			return "BV", nil
+			alpha2 = "BV"
 		case "Svalbard and Jan Mayen":
-			return "SJ", nil
+			alpha2 = "SJ"
 		}
 	case "Palestinian Territories":
-		return "PS", nil
+		alpha2 = "PS"
 	case "Principality of Monaco":
-		return "MC", nil
+		alpha2 = "MC"
+	case "Spain":
+		switch state {
+		case "Canarias", "Canary Islands":
+			alpha2 = "IC"
+			country = "Canarias"
+		}
 	case "Surinam":
-		return "SR", nil
+		alpha2 = "SR"
+	}
+
+	if alpha2 != "" {
+		return country, alpha2, nil
 	}
 
 	gountry, err := iso.Query.FindCountryByName(country)
 	if err != nil {
-		return "", err
+		return "", "", err
 	}
 
-	return gountry.Alpha2, nil
+	return country, gountry.Alpha2, nil
 }
 
 func CountryStats(db *gorm.DB) ([]Country, error) {
@@ -176,11 +190,12 @@ func CountryStats(db *gorm.DB) ([]Country, error) {
 
 	countries := make(map[string]Country, len(dbCountries))
 	for _, c := range dbCountries {
-		ISO3166Alpha2, err := iso.getISO3166Alpha2(c.Name, c.State)
+		country, ISO3166Alpha2, err := iso.getISO3166Alpha2(c.Name, c.State)
 		if err != nil {
 			return nil, err
 		}
 
+		c.Name = country
 		c.ID = ISO3166Alpha2
 
 		if countries[c.ID].Name == "" {
