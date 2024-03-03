@@ -161,7 +161,7 @@ func CountryStats(db *gorm.DB) ([]Country, error) {
 			"breweries.state as state").
 		Joins("LEFT JOIN beers on checkins.beer_id == beers.id").
 		Joins("LEFT JOIN breweries on beers.brewery_id == breweries.id").
-		Group("breweries.country").
+		Group("breweries.country, breweries.state").
 		Find(&dbCountries)
 	if res.Error != nil {
 		return nil, res.Error
@@ -170,7 +170,8 @@ func CountryStats(db *gorm.DB) ([]Country, error) {
 	iso := ISO3166Alpha2{
 		Query: gountries.New(),
 	}
-	var countries []Country
+
+	countries := make(map[string]Country, len(dbCountries))
 	for _, c := range dbCountries {
 		ISO3166Alpha2, err := iso.getISO3166Alpha2(c.Name, c.State)
 		if err != nil {
@@ -178,9 +179,22 @@ func CountryStats(db *gorm.DB) ([]Country, error) {
 		}
 
 		c.ID = ISO3166Alpha2
-		c.Settings = getDefaultSettings()
-		countries = append(countries, c)
+
+		if countries[c.ID].Name == "" {
+			c.Settings = getDefaultSettings()
+			countries[c.ID] = c
+		} else {
+			tmp := countries[c.ID]
+			tmp.Breweries += c.Breweries
+			tmp.Checkins += c.Checkins
+			countries[c.ID] = tmp
+		}
 	}
 
-	return countries, nil
+	countriesSlice := make([]Country, 0, len(countries))
+	for _, c := range countries {
+		countriesSlice = append(countriesSlice, c)
+	}
+
+	return countriesSlice, nil
 }
