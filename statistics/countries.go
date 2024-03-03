@@ -11,7 +11,7 @@ type Country struct {
 	Breweries int      `json:"breweries"`
 	Checkins  int      `json:"checkins"`
 	Name      string   `json:"name"`
-	State     string   `json:"state"`
+	State     string   `json:"-"`
 	Settings  Settings `json:"settings" gorm:"-"`
 }
 
@@ -29,13 +29,6 @@ func getDefaultSettings() Settings {
 		ToggleKey:   "active",
 		Interactive: "true",
 	}
-}
-
-type State struct {
-	Checkins  int    `json:"checkins"`
-	Breweries int    `json:"breweries"`
-	Country   string `json:"country"`
-	Name      string `json:"name"`
 }
 
 type ISO3166Alpha2 struct {
@@ -102,7 +95,7 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 			return "BL", nil
 		case "The Collectivity of Saint-Martin":
 			return "MF", nil
-		case " 	The Overseas Collectivity of Saint-Pierre and Miquelon":
+		case "The Overseas Collectivity of Saint-Pierre and Miquelon":
 			return "PM", nil
 		case "The Territory of the Wallis and Futuna Islands":
 			return "WF", nil

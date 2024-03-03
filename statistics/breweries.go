@@ -1,11 +1,12 @@
 package statistics
 
 import (
+	"sort"
+	"strings"
+
 	"github.com/kyrremann/unparsd/models"
 	"github.com/pariz/gountries"
 	"gorm.io/gorm"
-	"sort"
-	"strings"
 )
 
 type Brewery struct {
