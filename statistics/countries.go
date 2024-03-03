@@ -89,7 +89,7 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, error)
 			return "YT", nil
 		case "New Caledonia":
 			return "NC", nil
-		case "Réunion":
+		case "Réunion", "La Réunion":
 			return "RE", nil
 		case "The Collectivity of Saint-Barthélemy":
 			return "BL", nil
