@@ -157,7 +157,7 @@ func yearlyStats(db *gorm.DB) ([]PeriodStats, error) {
 }
 
 func daysSince(dateString string) (int, error) {
-	date, err := time.Parse("2006-02-03", dateString)
+	date, err := time.Parse("2006-01-02", dateString)
 	if err != nil {
 		return 0, err
 	}
