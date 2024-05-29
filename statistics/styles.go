@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"slices"
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
@@ -18,21 +19,11 @@ type DistinctStyle struct {
 	Total    int    `json:"total"`
 }
 
-func contains(list []string, el string) bool {
-	for _, v := range list {
-		if v == el {
-			return true
-		}
-	}
-
-	return false
-}
-
 func intersection(a, b []string) []string {
 	var c []string
 
 	for _, el := range a {
-		if !contains(b, el) {
+		if !slices.Contains(b, el) {
 			c = append(c, el)
 		}
 	}
@@ -49,7 +40,6 @@ func getStylesFromUntappd() ([]string, error) {
 	defer func(Body io.ReadCloser) {
 		err := Body.Close()
 		if err != nil {
-
 		}
 	}(resp.Body)
 
