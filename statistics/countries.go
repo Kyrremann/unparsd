@@ -10,12 +10,12 @@ import (
 )
 
 type Country struct {
-	ID        string   `json:"id"`
-	Breweries int      `json:"breweries"`
-	Checkins  int      `json:"checkins"`
-	Name      string   `json:"name"`
-	State     string   `json:"-"`
-	Settings  Settings `json:"settings" gorm:"-"`
+	ID        string    `json:"id"`
+	Breweries int       `json:"breweries,omitempty"`
+	Checkins  int       `json:"checkins,omitempty"`
+	Name      string    `json:"name"`
+	State     string    `json:"-"`
+	Settings  *Settings `json:"settings,omitempty" gorm:"-"`
 }
 
 type Settings struct {
@@ -25,8 +25,8 @@ type Settings struct {
 	Interactive string `json:"interactive"`
 }
 
-func getDefaultSettings() Settings {
-	return Settings{
+func getDefaultSettings() *Settings {
+	return &Settings{
 		Fill:        "#c96e12",
 		TooltipText: "{name}\nBreweries: {breweries}\nCheckins: {checkins}",
 		ToggleKey:   "active",
@@ -219,4 +219,36 @@ func CountryStats(db *gorm.DB) ([]Country, error) {
 	})
 
 	return countriesSlice, nil
+}
+
+func MissingCountries(db *gorm.DB) ([]Country, error) {
+	countries, err := CountryStats(db)
+	if err != nil {
+		return nil, err
+	}
+
+	var checkedInCountries []string
+	for _, country := range countries {
+		checkedInCountries = append(checkedInCountries, country.ID)
+	}
+
+	iso := ISO3166Alpha2{
+		Query: gountries.New(),
+	}
+	var allCountries []string
+	for alpha2 := range iso.Query.Countries {
+		allCountries = append(allCountries, alpha2)
+	}
+
+	missingCountriesAsString := intersection(allCountries, checkedInCountries)
+	missingCountries := make([]Country, 0, len(missingCountriesAsString))
+	for _, alpha2 := range missingCountriesAsString {
+		country := iso.Query.Countries[alpha2]
+		missingCountries = append(missingCountries, Country{
+			ID:   alpha2,
+			Name: country.Name.Common,
+		})
+	}
+
+	return missingCountries, nil
 }

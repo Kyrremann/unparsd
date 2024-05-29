@@ -31,3 +31,12 @@ func TestCountries(t *testing.T) {
 	assert.Equal(t, 1, country.Checkins)
 	assert.Equal(t, 1, country.Breweries)
 }
+
+func TestMissingCountries(t *testing.T) {
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	assert.NoError(t, err)
+
+	missingCountries, err := MissingCountries(db)
+	assert.NoError(t, err)
+	assert.Equal(t, 233, len(missingCountries))
+}
