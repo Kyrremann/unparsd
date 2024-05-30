@@ -250,5 +250,9 @@ func MissingCountries(db *gorm.DB) ([]Country, error) {
 		})
 	}
 
+	slices.SortFunc(missingCountries, func(a, b Country) int {
+		return strings.Compare(a.Name, b.Name)
+	})
+
 	return missingCountries, nil
 }
