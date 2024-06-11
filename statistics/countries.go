@@ -152,6 +152,8 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, string
 			alpha2 = "IC"
 			country = "Canarias"
 		}
+	case "St. Lucia":
+		alpha2 = "LC"
 	case "Surinam":
 		alpha2 = "SR"
 	}
