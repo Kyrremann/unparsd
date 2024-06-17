@@ -4,7 +4,7 @@ go 1.22
 
 require (
 	github.com/stretchr/testify v1.9.0
-	gorm.io/driver/sqlite v1.5.5
+	gorm.io/driver/sqlite v1.5.6
 	gorm.io/gorm v1.25.10
 )
 
@@ -15,7 +15,7 @@ require (
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.5 // indirect
-	github.com/mattn/go-sqlite3 v1.14.17 // indirect
+	github.com/mattn/go-sqlite3 v1.14.22 // indirect
 	github.com/pariz/gountries v0.1.6
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	golang.org/x/net v0.24.0 // indirect
