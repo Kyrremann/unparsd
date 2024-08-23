@@ -238,9 +238,15 @@ func MissingCountries(db *gorm.DB) ([]Country, error) {
 	missingCountries := make([]Country, 0, len(missingCountriesAsString))
 	for _, alpha2 := range missingCountriesAsString {
 		country := countries.ByName(alpha2)
+		name := country.String()
+
+		if name == "Taiwan (Province of China)" {
+			name = "Taiwan" // Taiwan is not a province of China
+		}
+
 		missingCountries = append(missingCountries, Country{
 			ID:   alpha2,
-			Name: country.String(),
+			Name: name,
 		})
 	}
 
