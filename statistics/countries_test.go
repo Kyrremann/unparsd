@@ -1,11 +1,12 @@
 package statistics
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/kyrremann/unparsd/models"
 	"github.com/kyrremann/unparsd/parsing"
-	"github.com/pariz/gountries"
+
 	"github.com/stretchr/testify/assert"
 )
 
@@ -19,17 +20,13 @@ func TestCountries(t *testing.T) {
 
 	assert.Equal(t, "United States", brewery.Country)
 
-	query := gountries.New()
-	gCountry, err := query.FindCountryByName(brewery.Country)
-	assert.NoError(t, err)
-	assert.Equal(t, "US", gCountry.Alpha2)
-
 	countries, err := CountryStats(db)
 	assert.NoError(t, err)
 	country := countries[0]
 	assert.Equal(t, "Australia", country.Name)
 	assert.Equal(t, 1, country.Checkins)
 	assert.Equal(t, 1, country.Breweries)
+	assert.Equal(t, "AU", country.ID)
 }
 
 func TestMissingCountries(t *testing.T) {
@@ -38,5 +35,6 @@ func TestMissingCountries(t *testing.T) {
 
 	missingCountries, err := MissingCountries(db)
 	assert.NoError(t, err)
-	assert.Equal(t, 233, len(missingCountries))
+	fmt.Println(missingCountries)
+	assert.Equal(t, 236, len(missingCountries))
 }

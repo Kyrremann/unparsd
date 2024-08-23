@@ -1,11 +1,12 @@
 package statistics
 
 import (
+	"fmt"
 	"slices"
 	"strings"
 
+	"github.com/biter777/countries"
 	"github.com/kyrremann/unparsd/models"
-	"github.com/pariz/gountries"
 	"gorm.io/gorm"
 )
 
@@ -34,11 +35,7 @@ func getDefaultSettings() *Settings {
 	}
 }
 
-type ISO3166Alpha2 struct {
-	Query *gountries.Query
-}
-
-func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, string, error) {
+func getISO3166Alpha2(country, state string) (string, string, error) {
 	var alpha2 string
 
 	switch country {
@@ -156,18 +153,20 @@ func (iso ISO3166Alpha2) getISO3166Alpha2(country, state string) (string, string
 		alpha2 = "LC"
 	case "Surinam":
 		alpha2 = "SR"
+	case "United States Virgin Islands":
+		alpha2 = "VI"
 	}
 
 	if alpha2 != "" {
 		return country, alpha2, nil
 	}
 
-	gountry, err := iso.Query.FindCountryByName(country)
-	if err != nil {
-		return "", "", err
+	gountry := countries.ByName(country)
+	if gountry == countries.Unknown {
+		return "", "", fmt.Errorf("unknown country: %s", country)
 	}
 
-	return country, gountry.Alpha2, nil
+	return country, gountry.Alpha2(), nil
 }
 
 func CountryStats(db *gorm.DB) ([]Country, error) {
@@ -186,13 +185,9 @@ func CountryStats(db *gorm.DB) ([]Country, error) {
 		return nil, res.Error
 	}
 
-	iso := ISO3166Alpha2{
-		Query: gountries.New(),
-	}
-
-	countries := make(map[string]Country, len(dbCountries))
+	countriesMap := make(map[string]Country, len(dbCountries))
 	for _, c := range dbCountries {
-		country, ISO3166Alpha2, err := iso.getISO3166Alpha2(c.Name, c.State)
+		country, ISO3166Alpha2, err := getISO3166Alpha2(c.Name, c.State)
 		if err != nil {
 			return nil, err
 		}
@@ -200,19 +195,19 @@ func CountryStats(db *gorm.DB) ([]Country, error) {
 		c.Name = country
 		c.ID = ISO3166Alpha2
 
-		if countries[c.ID].Name == "" {
+		if countriesMap[c.ID].Name == "" {
 			c.Settings = getDefaultSettings()
-			countries[c.ID] = c
+			countriesMap[c.ID] = c
 		} else {
-			tmp := countries[c.ID]
+			tmp := countriesMap[c.ID]
 			tmp.Breweries += c.Breweries
 			tmp.Checkins += c.Checkins
-			countries[c.ID] = tmp
+			countriesMap[c.ID] = tmp
 		}
 	}
 
-	countriesSlice := make([]Country, 0, len(countries))
-	for _, c := range countries {
+	countriesSlice := make([]Country, 0, len(countriesMap))
+	for _, c := range countriesMap {
 		countriesSlice = append(countriesSlice, c)
 	}
 
@@ -224,31 +219,28 @@ func CountryStats(db *gorm.DB) ([]Country, error) {
 }
 
 func MissingCountries(db *gorm.DB) ([]Country, error) {
-	countries, err := CountryStats(db)
+	stats, err := CountryStats(db)
 	if err != nil {
 		return nil, err
 	}
 
 	var checkedInCountries []string
-	for _, country := range countries {
+	for _, country := range stats {
 		checkedInCountries = append(checkedInCountries, country.ID)
 	}
 
-	iso := ISO3166Alpha2{
-		Query: gountries.New(),
-	}
 	var allCountries []string
-	for alpha2 := range iso.Query.Countries {
-		allCountries = append(allCountries, alpha2)
+	for _, country := range countries.All() {
+		allCountries = append(allCountries, country.Alpha2())
 	}
 
 	missingCountriesAsString := intersection(allCountries, checkedInCountries)
 	missingCountries := make([]Country, 0, len(missingCountriesAsString))
 	for _, alpha2 := range missingCountriesAsString {
-		country := iso.Query.Countries[alpha2]
+		country := countries.ByName(alpha2)
 		missingCountries = append(missingCountries, Country{
 			ID:   alpha2,
-			Name: country.Name.Common,
+			Name: country.String(),
 		})
 	}
 

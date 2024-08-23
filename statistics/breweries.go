@@ -5,7 +5,6 @@ import (
 	"strings"
 
 	"github.com/kyrremann/unparsd/models"
-	"github.com/pariz/gountries"
 	"gorm.io/gorm"
 )
 
@@ -35,10 +34,6 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 		return nil, res.Error
 	}
 
-	iso := ISO3166Alpha2{
-		Query: gountries.New(),
-	}
-
 	for i, brewery := range breweries {
 		var beers []string
 		res = db.
@@ -56,10 +51,11 @@ func BreweryStats(db *gorm.DB) ([]Brewery, error) {
 		sort.Strings(beers)
 		breweries[i].ListOfBeers = strings.Join(beers, "\n")
 
-		_, ISO3166Alpha2, err := iso.getISO3166Alpha2(brewery.Country, brewery.State)
+		_, ISO3166Alpha2, err := getISO3166Alpha2(brewery.Country, brewery.State)
 		if err != nil {
 			return nil, err
 		}
+
 		breweries[i].ISO3166Alpha2 = ISO3166Alpha2
 	}
 
