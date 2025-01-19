@@ -120,6 +120,18 @@ func monthlyStats(db *gorm.DB, year string) ([]PeriodStats, error) {
 			return nil, err
 		}
 		monthly[i].Month = stringMonth
+
+		mostCheckinsPerDay, err := MostCheckinsPerDay(db, year, ps.Month)
+		if err != nil {
+			return nil, err
+		}
+		monthly[i].MostCheckinsPerDay = mostCheckinsPerDay
+
+		mostUniqueBeersPerDay, err := MostUniqueBeersPerDay(db, year, ps.Month)
+		if err != nil {
+			return nil, err
+		}
+		monthly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
 	}
 
 	return monthly, nil
@@ -151,6 +163,18 @@ func yearlyStats(db *gorm.DB) ([]PeriodStats, error) {
 			days = daysInYear(intYear)
 		}
 		yearly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(days))*100.00) / 100.00
+
+		mostCheckinsPerDay, err := MostCheckinsPerDay(db, ps.Year, "")
+		if err != nil {
+			return nil, err
+		}
+		yearly[i].MostCheckinsPerDay = mostCheckinsPerDay
+
+		mostUniqueBeersPerDay, err := MostUniqueBeersPerDay(db, ps.Year, "")
+		if err != nil {
+			return nil, err
+		}
+		yearly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
 	}
 
 	return yearly, nil
