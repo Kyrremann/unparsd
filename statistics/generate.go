@@ -78,15 +78,6 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	checkinsByDay, err := CheckinsByDay(db)
-	if err != nil {
-		return err
-	}
-
-	if err = parsing.SaveDataToJsonFile(checkinsByDay, path+"/checkins_by_day.json"); err != nil {
-		return err
-	}
-
 	return nil
 }
 
