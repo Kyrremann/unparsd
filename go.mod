@@ -6,7 +6,7 @@ require (
 	github.com/biter777/countries v1.7.5
 	github.com/stretchr/testify v1.10.0
 	gorm.io/driver/sqlite v1.5.7
-	gorm.io/gorm v1.26.1
+	gorm.io/gorm v1.30.0
 )
 
 require (
