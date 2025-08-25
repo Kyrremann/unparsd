@@ -4,7 +4,7 @@ go 1.24.1
 
 require (
 	github.com/biter777/countries v1.7.5
-	github.com/stretchr/testify v1.10.0
+	github.com/stretchr/testify v1.11.0
 	gorm.io/driver/sqlite v1.6.0
 	gorm.io/gorm v1.30.1
 )
