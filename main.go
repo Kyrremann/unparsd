@@ -1,9 +1,12 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"os"
+	"os/signal"
 	"path/filepath"
+	"syscall"
 
 	"github.com/jessevdk/go-flags"
 	"github.com/kyrremann/unparsd/fetch"
@@ -36,7 +39,13 @@ func (f *fetchCommand) Execute(_ []string) error {
 				"Register your app at https://untappd.com/api/register to obtain credentials",
 		)
 	}
-	return fetch.FetchAndSave(f.Username, clientID, clientSecret, f.Output)
+
+	// Create a context that is cancelled on Ctrl+C or SIGTERM so that any
+	// check-ins fetched so far are saved to disk before the process exits.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
+	defer stop()
+
+	return fetch.FetchAndSave(ctx, f.Username, clientID, clientSecret, f.Output)
 }
 
 func main() {

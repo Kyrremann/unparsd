@@ -1,7 +1,9 @@
 package fetch
 
 import (
+	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"io"
 	"log"
@@ -27,7 +29,10 @@ const (
 //
 // On subsequent runs it loads existing files first and only downloads
 // check-ins newer than the highest checkin_id already stored.
-func FetchAndSave(username, clientID, clientSecret, outputDir string) error {
+//
+// If ctx is cancelled the function saves whatever has been fetched so far
+// and returns nil so that no data is lost.
+func FetchAndSave(ctx context.Context, username, clientID, clientSecret, outputDir string) error {
 	if err := os.MkdirAll(outputDir, 0755); err != nil {
 		return fmt.Errorf("creating output directory: %w", err)
 	}
@@ -45,16 +50,28 @@ func FetchAndSave(username, clientID, clientSecret, outputDir string) error {
 	log.Printf("Found %d existing check-ins", len(existing))
 
 	// Fetch only check-ins that are not yet stored.
-	newCheckins, err := fetchAllNew(username, clientID, clientSecret, existingIDs)
-	if err != nil {
-		return fmt.Errorf("fetching check-ins from API: %w", err)
+	newCheckins, fetchErr := fetchAllNew(ctx, username, clientID, clientSecret, existingIDs)
+
+	// On cancellation, partial results are still worth saving.
+	cancelled := errors.Is(fetchErr, context.Canceled) || errors.Is(fetchErr, context.DeadlineExceeded)
+	if fetchErr != nil && !cancelled {
+		return fmt.Errorf("fetching check-ins from API: %w", fetchErr)
 	}
 
 	if len(newCheckins) == 0 {
+		if cancelled {
+			log.Println("Fetch cancelled before any new check-ins were retrieved")
+			return nil
+		}
 		log.Println("No new check-ins found")
 		return nil
 	}
-	log.Printf("Fetched %d new check-ins", len(newCheckins))
+
+	if cancelled {
+		log.Printf("Fetch cancelled; saving %d partial check-ins", len(newCheckins))
+	} else {
+		log.Printf("Fetched %d new check-ins", len(newCheckins))
+	}
 
 	// Merge and split by year.
 	return saveByYear(append(existing, newCheckins...), outputDir)
@@ -88,15 +105,25 @@ func loadExistingCheckins(dir string) ([]models.JSONCheckin, error) {
 
 // fetchAllNew pages through the API newest-first, stopping as soon as it
 // encounters a checkin_id that already exists in existingIDs.
-func fetchAllNew(username, clientID, clientSecret string, existingIDs map[int]struct{}) ([]models.JSONCheckin, error) {
+// On context cancellation it returns whatever it has collected so far along
+// with the context error so the caller can decide to save partial results.
+func fetchAllNew(ctx context.Context, username, clientID, clientSecret string, existingIDs map[int]struct{}) ([]models.JSONCheckin, error) {
 	client := &http.Client{Timeout: 30 * time.Second}
 	var newCheckins []models.JSONCheckin
 	maxID := 0
 
 	for {
+		// Check for cancellation before each page fetch.
+		if err := ctx.Err(); err != nil {
+			return newCheckins, err
+		}
+
 		url := buildURL(username, clientID, clientSecret, maxID)
-		items, nextMaxID, err := fetchPage(client, url)
+		items, nextMaxID, err := fetchPage(ctx, client, url)
 		if err != nil {
+			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
+				return newCheckins, err
+			}
 			return nil, err
 		}
 
@@ -116,7 +143,12 @@ func fetchAllNew(username, clientID, clientSecret string, existingIDs map[int]st
 		maxID = nextMaxID
 
 		// Brief pause between pages to be a good API citizen.
-		time.Sleep(100 * time.Millisecond)
+		// Immediately interruptible on cancellation.
+		select {
+		case <-ctx.Done():
+			return newCheckins, ctx.Err()
+		case <-time.After(100 * time.Millisecond):
+		}
 	}
 
 	return newCheckins, nil
@@ -133,8 +165,8 @@ func buildURL(username, clientID, clientSecret string, maxID int) string {
 	return url
 }
 
-func fetchPage(client *http.Client, url string) ([]models.APICheckin, int, error) {
-	req, err := http.NewRequest(http.MethodGet, url, nil)
+func fetchPage(ctx context.Context, client *http.Client, url string) ([]models.APICheckin, int, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
 		return nil, 0, err
 	}
@@ -147,10 +179,15 @@ func fetchPage(client *http.Client, url string) ([]models.APICheckin, int, error
 	defer resp.Body.Close()
 
 	// Honour rate-limit headers – pause when running low.
+	// The sleep is interruptible via the context.
 	if remaining := resp.Header.Get("X-Ratelimit-Remaining"); remaining != "" {
 		if n, err := strconv.Atoi(remaining); err == nil && n < 5 {
 			log.Printf("Rate limit nearly exhausted (%d remaining), waiting 60s...", n)
-			time.Sleep(60 * time.Second)
+			select {
+			case <-ctx.Done():
+				return nil, 0, ctx.Err()
+			case <-time.After(60 * time.Second):
+			}
 		}
 	}
 
