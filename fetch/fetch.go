@@ -207,6 +207,12 @@ func fetchPage(ctx context.Context, client *http.Client, url string) ([]models.A
 
 	items := apiResp.Response.Checkins.Items
 	nextMaxID := apiResp.Response.Checkins.Pagination.MaxID
+	// The Untappd API often returns max_id=0 in the pagination object.
+	// Derive the next page cursor from the oldest item in the current page
+	// instead (items are newest-first, so last item is oldest).
+	if nextMaxID == 0 && len(items) > 0 {
+		nextMaxID = items[len(items)-1].CheckinID
+	}
 	return items, nextMaxID, nil
 }
 
