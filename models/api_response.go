@@ -1,6 +1,7 @@
 package models
 
 import (
+	"encoding/json"
 	"fmt"
 	"strings"
 	"time"
@@ -77,6 +78,18 @@ type APIVenue struct {
 type APILocation struct {
 	VenueLat float32 `json:"venue_lat"`
 	VenueLng float32 `json:"venue_lng"`
+}
+
+// UnmarshalJSON handles the Untappd API quirk where an absent venue is
+// returned as an empty JSON array ([]) rather than null or {}.
+func (v *APIVenue) UnmarshalJSON(data []byte) error {
+	if len(data) > 0 && data[0] == '[' {
+		// Empty array means no venue — leave struct at zero value.
+		return nil
+	}
+	// Use a type alias to avoid infinite recursion.
+	type apiVenueAlias APIVenue
+	return json.Unmarshal(data, (*apiVenueAlias)(v))
 }
 
 type APICount struct {
