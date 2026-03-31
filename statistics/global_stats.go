@@ -30,8 +30,10 @@ type PeriodStats struct {
 	UniqueVenues          int           `json:"unique_venues"`
 	VenueCountries        int           `json:"venue_countries"`
 	UniqueBeers           int           `json:"unique_beers"`
+	NewBeers              int           `json:"new_beers"`
 	MaxAbv                float64       `json:"max_abv"`
 	AvgAbv                float64       `json:"avg_abv"`
+	MaxIbu                int           `json:"max_ibu"`
 	Styles                int           `json:"styles"`
 	StartDate             string        `json:"start_date"`
 	Month                 string        `json:"month,omitempty"`
@@ -80,9 +82,11 @@ func periodStats(db *gorm.DB, groupBy, year string) ([]PeriodStats, error) {
 			"count(DISTINCT(breweries.country)) as brewery_countries," +
 			"count(DISTINCT(beers.brewery_id)) as unique_breweries," +
 			"count(DISTINCT(beers.id)) as unique_beers," +
+			"count(DISTINCT CASE WHEN strftime('%Y-%m', (SELECT min(c2.checkin_at) FROM checkins c2 WHERE c2.beer_id = checkins.beer_id)) = strftime('%Y-%m', checkins.checkin_at) THEN checkins.beer_id END) as new_beers," +
 			"count(DISTINCT(beers.type)) as styles," +
 			"ROUND(max(beers.abv), 2) as max_abv," +
 			"ROUND(avg(beers.abv), 2) as avg_abv," +
+			"max(beers.ibu) as max_ibu," +
 			"count(DISTINCT(checkins.venue_name)) as unique_venues," +
 			"count(DISTINCT(venues.country)) as venue_countries," +
 			"date(min(checkins.checkin_at)) as start_date," +
@@ -108,12 +112,29 @@ func monthlyStats(db *gorm.DB, year string) ([]PeriodStats, error) {
 		return nil, err
 	}
 
+	now := time.Now()
+	intYear, err := strconv.Atoi(year)
+	if err != nil {
+		return nil, err
+	}
+
 	for i, ps := range monthly {
-		daysInMonth, err := daysInMonth(year, ps.Month)
+		intMonth, err := strconv.Atoi(ps.Month)
 		if err != nil {
 			return nil, err
 		}
-		monthly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(daysInMonth))*100.00) / 100.00
+
+		var divisor int
+		if intYear == now.Year() && intMonth == int(now.Month()) {
+			// Current (incomplete) month: divide by days elapsed so far.
+			divisor = now.Day()
+		} else {
+			divisor, err = daysInMonth(year, ps.Month)
+			if err != nil {
+				return nil, err
+			}
+		}
+		monthly[i].BeersPerDay = math.Round((float64(ps.Checkins)/float64(divisor))*100.00) / 100.00
 
 		stringMonth, err := getMonthAsString(ps.Month)
 		if err != nil {
@@ -198,10 +219,6 @@ func AllMyStats(db *gorm.DB) (GlobalStats, error) {
 			"date(min(checkins.checkin_at)) as start_date").
 		Joins("INNER JOIN beers ON checkins.beer_id == beers.id").
 		Find(&globalStat)
-
-	if res.Error != nil {
-		return GlobalStats{}, res.Error
-	}
 
 	if res.Error != nil {
 		return GlobalStats{}, res.Error

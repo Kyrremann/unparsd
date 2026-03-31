@@ -3,6 +3,7 @@ package statistics
 import (
 	"fmt"
 	"os"
+	"path/filepath"
 	"text/template"
 
 	"github.com/kyrremann/unparsd/parsing"
@@ -10,8 +11,8 @@ import (
 )
 
 func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
-	path = path + "/_data"
-	if err := os.MkdirAll(path, 0o755); err != nil {
+	dataPath := filepath.Join(path, "_data")
+	if err := os.MkdirAll(dataPath, 0o755); err != nil {
 		return err
 	}
 
@@ -20,7 +21,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	if err := parsing.SaveDataToJsonFile(missingStyles, path+"/missing_styles.json"); err != nil {
+	if err := parsing.SaveDataToJsonFile(missingStyles, filepath.Join(dataPath, "missing_styles.json")); err != nil {
 		return err
 	}
 
@@ -29,7 +30,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	if err := parsing.SaveDataToJsonFile(distinctStyles, path+"/styles.json"); err != nil {
+	if err := parsing.SaveDataToJsonFile(distinctStyles, filepath.Join(dataPath, "styles.json")); err != nil {
 		return err
 	}
 
@@ -38,7 +39,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	if err := parsing.SaveDataToJsonFile(breweries, path+"/breweries.json"); err != nil {
+	if err := parsing.SaveDataToJsonFile(breweries, filepath.Join(dataPath, "breweries.json")); err != nil {
 		return err
 	}
 
@@ -47,7 +48,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	if err := parsing.SaveDataToJsonFile(beers, path+"/beers.json"); err != nil {
+	if err := parsing.SaveDataToJsonFile(beers, filepath.Join(dataPath, "beers.json")); err != nil {
 		return err
 	}
 
@@ -56,7 +57,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	if err := parsing.SaveDataToJsonFile(countries, path+"/countries.json"); err != nil {
+	if err := parsing.SaveDataToJsonFile(countries, filepath.Join(dataPath, "countries.json")); err != nil {
 		return err
 	}
 
@@ -65,7 +66,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	if err := parsing.SaveDataToJsonFile(missingCountries, path+"/missing_countries.json"); err != nil {
+	if err := parsing.SaveDataToJsonFile(missingCountries, filepath.Join(dataPath, "missing_countries.json")); err != nil {
 		return err
 	}
 
@@ -74,7 +75,70 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	if err := parsing.SaveDataToJsonFile(allMyStats, path+"/allmy.json"); err != nil {
+	if err := parsing.SaveDataToJsonFile(allMyStats, filepath.Join(dataPath, "allmy.json")); err != nil {
+		return err
+	}
+
+	weeklyStats, err := DayOfWeekStats(db)
+	if err != nil {
+		return err
+	}
+
+	if err := parsing.SaveDataToJsonFile(weeklyStats, filepath.Join(dataPath, "weekly.json")); err != nil {
+		return err
+	}
+
+	streakStats, err := CheckinStreak(db)
+	if err != nil {
+		return err
+	}
+
+	if err := parsing.SaveDataToJsonFile(streakStats, filepath.Join(dataPath, "streak.json")); err != nil {
+		return err
+	}
+
+	abvStats, err := ABVDistribution(db)
+	if err != nil {
+		return err
+	}
+
+	if err := parsing.SaveDataToJsonFile(abvStats, filepath.Join(dataPath, "abv.json")); err != nil {
+		return err
+	}
+
+	ratingDeltas, err := RatingDeltas(db)
+	if err != nil {
+		return err
+	}
+
+	if err := parsing.SaveDataToJsonFile(ratingDeltas, filepath.Join(dataPath, "rating_deltas.json")); err != nil {
+		return err
+	}
+
+	topVenues, err := TopVenues(db)
+	if err != nil {
+		return err
+	}
+
+	if err := parsing.SaveDataToJsonFile(topVenues, filepath.Join(dataPath, "venues.json")); err != nil {
+		return err
+	}
+
+	servingTypes, err := ServingTypeStats(db)
+	if err != nil {
+		return err
+	}
+
+	if err := parsing.SaveDataToJsonFile(servingTypes, filepath.Join(dataPath, "serving_types.json")); err != nil {
+		return err
+	}
+
+	flavors, err := FlavorProfileStats(db)
+	if err != nil {
+		return err
+	}
+
+	if err := parsing.SaveDataToJsonFile(flavors, filepath.Join(dataPath, "flavors.json")); err != nil {
 		return err
 	}
 
@@ -82,8 +146,8 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 }
 
 func GenerateMonthlyAndSave(db *gorm.DB, path string) error {
-	path = path + "/_monthly"
-	err := os.MkdirAll(path, 0o755)
+	monthlyPath := filepath.Join(path, "_monthly")
+	err := os.MkdirAll(monthlyPath, 0o755)
 	if err != nil {
 		return err
 	}
@@ -110,11 +174,12 @@ banner: In {{ .Year}} I started drinking {{ .StartDay }}th of {{ .StartMonth }} 
 		return err
 	}
 	for _, y := range monthlyData {
-		output, err := os.Create(path + fmt.Sprintf("/%v.html", y.Year))
+		output, err := os.Create(filepath.Join(monthlyPath, fmt.Sprintf("%v.html", y.Year)))
 		if err != nil {
 			return err
 		}
 		err = tmpl.Execute(output, y)
+		output.Close()
 		if err != nil {
 			return err
 		}
