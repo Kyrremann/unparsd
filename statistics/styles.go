@@ -2,7 +2,6 @@ package statistics
 
 import (
 	"fmt"
-	"io"
 	"net/http"
 	"slices"
 	"strings"
@@ -15,7 +14,7 @@ import (
 
 type DistinctStyle struct {
 	Type     string `json:"type"`
-	Distinct int    `gorm:"-" json:"distinct"`
+	Distinct int    `gorm:"column:distinct_count" json:"distinct"`
 	Total    int    `json:"total"`
 }
 
@@ -31,17 +30,16 @@ func intersection(a, b []string) []string {
 	return c
 }
 
-func getStylesFromUntappd() ([]string, error) {
+func getStylesFromUntappd() (styles []string, err error) {
 	resp, err := http.Get("https://untappd.com/beer/top_rated")
 	if err != nil {
 		return nil, err
 	}
-
-	defer func(Body io.ReadCloser) {
-		err := Body.Close()
-		if err != nil {
+	defer func() {
+		if cerr := resp.Body.Close(); cerr != nil && err == nil {
+			err = cerr
 		}
-	}(resp.Body)
+	}()
 
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("status code error: %d %s", resp.StatusCode, resp.Status)
@@ -51,7 +49,6 @@ func getStylesFromUntappd() ([]string, error) {
 		return nil, err
 	}
 
-	var styles []string
 	doc.Find("select#filter_picker").Find("option").Each(func(i int, s *goquery.Selection) {
 		style := strings.TrimSpace(s.Text())
 		if style != "Show All Styles" {
@@ -88,32 +85,15 @@ func MissingStyles(db *gorm.DB, allStylesFile string) ([]string, error) {
 }
 
 func DistinctStyles(db *gorm.DB) ([]DistinctStyle, error) {
+	// One query: distinct beer count per style + total checkin count per style.
 	var styles []DistinctStyle
-	var distinctive []DistinctStyle
-	res := db.Model(&models.Beer{}).Select("Type, count(Type) as total").Group("Type").Find(&distinctive)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	for _, d := range distinctive {
-		styles = append(styles, DistinctStyle{Type: d.Type, Distinct: d.Total})
-	}
-
-	var checkins []DistinctStyle
-	res = db.Model(&models.Checkin{}).Select("checkins.beer").Joins("Beer").Select("Beer.Type, count(Beer.Type) as total").Group("Beer.Type").Find(&checkins)
-	if res.Error != nil {
-		return nil, res.Error
-	}
-
-	for _, c := range checkins {
-		for i, style := range styles {
-			if style.Type == c.Type {
-				style.Total = c.Total
-				styles[i] = style
-				break
-			}
-		}
-	}
-
-	return styles, nil
+	res := db.
+		Table("beers").
+		Select("beers.type as type," +
+			"count(DISTINCT beers.id) as distinct_count," +
+			"count(checkins.id) as total").
+		Joins("LEFT JOIN checkins ON checkins.beer_id = beers.id").
+		Group("beers.type").
+		Find(&styles)
+	return styles, res.Error
 }
