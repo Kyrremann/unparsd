@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io"
 	"os"
+	"path/filepath"
 	"strings"
 
 	"github.com/kyrremann/unparsd/models"
@@ -13,13 +14,23 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func LoadJsonIntoDatabase(file string) (*gorm.DB, error) {
+func LoadJsonIntoDatabase(path string) (*gorm.DB, error) {
 	db, err := OpenInMemoryDatabase()
 	if err != nil {
 		return nil, err
 	}
 
-	checkins, err := ParseJsonToCheckins(file)
+	info, err := os.Stat(path)
+	if err != nil {
+		return nil, err
+	}
+
+	var checkins []models.JSONCheckin
+	if info.IsDir() {
+		checkins, err = ParseJsonDirToCheckins(path)
+	} else {
+		checkins, err = ParseJsonToCheckins(path)
+	}
 	if err != nil {
 		return nil, err
 	}
@@ -87,6 +98,28 @@ func ParseJsonToCheckins(file string) ([]models.JSONCheckin, error) {
 	return checkins, nil
 }
 
+// ParseJsonDirToCheckins reads all *.json files from dir and returns the
+// merged slice of check-ins.
+func ParseJsonDirToCheckins(dir string) ([]models.JSONCheckin, error) {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return nil, err
+	}
+
+	var all []models.JSONCheckin
+	for _, entry := range entries {
+		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
+			continue
+		}
+		checkins, err := ParseJsonToCheckins(filepath.Join(dir, entry.Name()))
+		if err != nil {
+			return nil, fmt.Errorf("reading %s: %w", entry.Name(), err)
+		}
+		all = append(all, checkins...)
+	}
+	return all, nil
+}
+
 func insertAllIntoDatabase(checkins []models.JSONCheckin, db *gorm.DB) error {
 	for _, checkin := range checkins {
 		err := InsertIntoDatabase(checkin, db)
@@ -114,7 +147,7 @@ func InsertIntoDatabase(jsonCheckin models.JSONCheckin, db *gorm.DB) error {
 		Venue: models.Venue{
 			Name:    jsonCheckin.VenueName,
 			City:    jsonCheckin.VenueCity,
-			State:   jsonCheckin.VenueCity,
+			State:   jsonCheckin.VenueState,
 			Country: jsonCheckin.VenueCountry,
 			Lat:     jsonCheckin.VenueLat,
 			Lng:     jsonCheckin.VenueLng,
