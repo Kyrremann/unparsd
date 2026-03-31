@@ -4,6 +4,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"os"
 	"path/filepath"
 	"strings"
@@ -61,11 +62,11 @@ func ReadFile(file string) ([]byte, error) {
 	if err != nil {
 		return nil, err
 	}
-	defer func(jsonFile *os.File) {
-		err := jsonFile.Close()
-		if err != nil {
+	defer func() {
+		if cerr := jsonFile.Close(); cerr != nil && err == nil {
+			err = cerr
 		}
-	}(jsonFile)
+	}()
 
 	bytes, err := io.ReadAll(jsonFile)
 	if err != nil {
@@ -172,8 +173,14 @@ func InsertIntoDatabase(jsonCheckin models.JSONCheckin, db *gorm.DB) error {
 
 	res := db.
 		Clauses(clause.OnConflict{
-			Columns:   []clause.Column{{Name: "id"}},
-			DoUpdates: clause.Assignments(map[string]interface{}{"photo_url": dbCheckin.PhotoUrl}),
+			Columns: []clause.Column{{Name: "id"}},
+			DoUpdates: clause.Assignments(map[string]interface{}{
+				"photo_url":      dbCheckin.PhotoUrl,
+				"rating_score":   dbCheckin.RatingScore,
+				"comment":        dbCheckin.Comment,
+				"total_toasts":   dbCheckin.TotalToasts,
+				"total_comments": dbCheckin.TotalComments,
+			}),
 		}).
 		Create(&dbCheckin)
 	return res.Error
@@ -186,7 +193,7 @@ func convertRatingScore(score any) float32 {
 	case string:
 		return 0
 	default:
-		fmt.Printf("unexpected type %T", v)
+		log.Printf("unexpected type %T", v)
 		return 0
 	}
 }
@@ -201,10 +208,8 @@ func SaveDataToJsonFile(v interface{}, fileName string) error {
 	if err != nil {
 		return err
 	}
-	_, err = file.Write(bytes)
-	if err != nil {
-		return err
-	}
+	defer file.Close()
 
-	return nil
+	_, err = file.Write(bytes)
+	return err
 }
