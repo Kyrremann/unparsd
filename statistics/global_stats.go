@@ -15,6 +15,9 @@ type GlobalStats struct {
 	DaysDrinking  int                    `gorm:"-" json:"days_drinking"`
 	BeersPerDay   float64                `gorm:"-" json:"beers_per_day"`
 	Periods       map[string]PeriodStats `gorm:"-" json:"years"`
+	Streak        StreakStats            `gorm:"-" json:"streak"`
+	ABV           []ABVBucket            `gorm:"-" json:"abv"`
+	Weekly        []DayOfWeekStat        `gorm:"-" json:"weekly"`
 	GeneratedDate time.Time              `json:"generated_date"`
 }
 
@@ -42,6 +45,8 @@ type PeriodStats struct {
 	MostCheckinsPerDay    MostPerDay    `gorm:"-" json:"most_checkins_per_day"`
 	MostUniqueBeersPerDay MostPerDay    `gorm:"-" json:"most_unique_beers_per_day"`
 	BeersPerDay           float64       `gorm:"-" json:"beers_per_day"`
+	Streak                StreakStats   `gorm:"-" json:"streak"`
+	ABV                   []ABVBucket   `gorm:"-" json:"abv"`
 }
 
 func getMonthAsString(month string) (string, error) {
@@ -196,6 +201,18 @@ func yearlyStats(db *gorm.DB) ([]PeriodStats, error) {
 			return nil, err
 		}
 		yearly[i].MostUniqueBeersPerDay = mostUniqueBeersPerDay
+
+		streak, err := CheckinStreak(db, ps.Year)
+		if err != nil {
+			return nil, err
+		}
+		yearly[i].Streak = streak
+
+		abv, err := ABVDistribution(db, ps.Year)
+		if err != nil {
+			return nil, err
+		}
+		yearly[i].ABV = abv
 	}
 
 	return yearly, nil
@@ -240,6 +257,25 @@ func AllMyStats(db *gorm.DB) (GlobalStats, error) {
 	}
 	globalStat.DaysDrinking = daysDrinking
 	globalStat.BeersPerDay = math.Round((float64(globalStat.Checkins)/float64(daysDrinking))*100.00) / 100.00
+
+	streak, err := CheckinStreak(db, "")
+	if err != nil {
+		return GlobalStats{}, err
+	}
+	globalStat.Streak = streak
+
+	abv, err := ABVDistribution(db, "")
+	if err != nil {
+		return GlobalStats{}, err
+	}
+	globalStat.ABV = abv
+
+	weekly, err := DayOfWeekStats(db)
+	if err != nil {
+		return GlobalStats{}, err
+	}
+	globalStat.Weekly = weekly
+
 	globalStat.GeneratedDate = time.Now()
 
 	return globalStat, nil

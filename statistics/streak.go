@@ -17,14 +17,18 @@ type StreakStats struct {
 }
 
 // CheckinStreak computes the longest and current check-in streaks (consecutive calendar days).
-func CheckinStreak(db *gorm.DB) (StreakStats, error) {
+// Pass a non-empty year to restrict the calculation to that year only.
+func CheckinStreak(db *gorm.DB, year string) (StreakStats, error) {
 	// Fetch all distinct check-in dates in ascending order.
 	var dates []string
-	res := db.
+	tx := db.
 		Table("checkins").
 		Distinct("strftime('%Y-%m-%d', checkin_at) as d").
-		Order("d ASC").
-		Pluck("d", &dates)
+		Order("d ASC")
+	if year != "" {
+		tx = tx.Where("strftime('%Y', checkin_at) = ?", year)
+	}
+	res := tx.Pluck("d", &dates)
 	if res.Error != nil {
 		return StreakStats{}, res.Error
 	}

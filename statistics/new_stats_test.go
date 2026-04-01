@@ -33,7 +33,7 @@ func TestCheckinStreak(t *testing.T) {
 	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
 	assert.NoError(t, err)
 
-	streak, err := CheckinStreak(db)
+	streak, err := CheckinStreak(db, "")
 	assert.NoError(t, err)
 
 	assert.GreaterOrEqual(t, streak.Longest, 1)
@@ -47,7 +47,7 @@ func TestABVDistribution(t *testing.T) {
 	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
 	assert.NoError(t, err)
 
-	buckets, err := ABVDistribution(db)
+	buckets, err := ABVDistribution(db, "")
 	assert.NoError(t, err)
 	assert.Len(t, buckets, 5)
 

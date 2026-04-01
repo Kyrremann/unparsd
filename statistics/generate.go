@@ -79,33 +79,6 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 		return err
 	}
 
-	weeklyStats, err := DayOfWeekStats(db)
-	if err != nil {
-		return err
-	}
-
-	if err := parsing.SaveDataToJsonFile(weeklyStats, filepath.Join(dataPath, "weekly.json")); err != nil {
-		return err
-	}
-
-	streakStats, err := CheckinStreak(db)
-	if err != nil {
-		return err
-	}
-
-	if err := parsing.SaveDataToJsonFile(streakStats, filepath.Join(dataPath, "streak.json")); err != nil {
-		return err
-	}
-
-	abvStats, err := ABVDistribution(db)
-	if err != nil {
-		return err
-	}
-
-	if err := parsing.SaveDataToJsonFile(abvStats, filepath.Join(dataPath, "abv.json")); err != nil {
-		return err
-	}
-
 	ratingDeltas, err := RatingDeltas(db)
 	if err != nil {
 		return err
