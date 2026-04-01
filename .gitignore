@@ -4,7 +4,9 @@ all_styles.json
 .vscode/
 .idea/
 .DS_Store
+.env
 output/
-_data
-_monthly
+_data/
+_monthly/
+checkins/
 unparsd
