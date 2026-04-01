@@ -36,5 +36,5 @@ func TestMissingCountries(t *testing.T) {
 	missingCountries, err := MissingCountries(db)
 	assert.NoError(t, err)
 	fmt.Println(missingCountries)
-	assert.Equal(t, 236, len(missingCountries))
+	assert.Equal(t, 237, len(missingCountries))
 }
