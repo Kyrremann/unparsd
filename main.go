@@ -14,11 +14,37 @@ import (
 	"github.com/kyrremann/unparsd/statistics"
 )
 
-// Top-level options drive the default generate behaviour (backward-compatible).
-var opts struct {
+// generateCommand implements the 'generate' subcommand.
+type generateCommand struct {
 	Untappd   string `short:"u" long:"untappd" description:"Path to untappd.json file or directory of per-year JSON files" value-name:"untappd.json" default:"untappd.json"`
 	Output    string `short:"o" long:"output" description:"Output directory for generated statistics files" value-name:"_data" default:"./"`
 	AllStyles string `short:"s" long:"all-styles" description:"Path to all-styles.json; omit to scrape Untappd live" value-name:"all-styles.json"`
+}
+
+func (p *generateCommand) Execute(_ []string) error {
+	if err := os.MkdirAll(p.Output, 0755); err != nil {
+		return err
+	}
+
+	if _, err := os.Stat(p.Untappd); err != nil {
+		return fmt.Errorf("input path %q not found: %w", p.Untappd, err)
+	}
+
+	db, err := parsing.LoadJsonIntoDatabase(p.Untappd)
+	if err != nil {
+		return err
+	}
+
+	base, err := filepath.Abs(p.Output)
+	if err != nil {
+		return err
+	}
+
+	if err := statistics.GenerateAndSave(db, base, p.AllStyles); err != nil {
+		return err
+	}
+
+	return statistics.GenerateMonthlyAndSave(db, base)
 }
 
 // fetchCommand implements the 'fetch' subcommand.
@@ -27,9 +53,6 @@ type fetchCommand struct {
 	Output   string `short:"o" long:"output" description:"Directory to write per-year JSON files into" default:"./checkins"`
 }
 
-// Execute is called automatically by go-flags when the 'fetch' subcommand
-// is selected.  Credentials are read from environment variables so they
-// never appear in shell history.
 func (f *fetchCommand) Execute(_ []string) error {
 	clientID := os.Getenv("UNTAPPD_CLIENT_ID")
 	clientSecret := os.Getenv("UNTAPPD_CLIENT_SECRET")
@@ -49,7 +72,14 @@ func (f *fetchCommand) Execute(_ []string) error {
 }
 
 func main() {
-	parser := flags.NewParser(&opts, flags.Default)
+	parser := flags.NewParser(nil, flags.Default)
+	parser.AddCommand(
+		"generate",
+		"Generate statistics from a local check-in file",
+		"Reads a untappd.json export (or a directory of per-year JSON files) and\n"+
+			"writes statistics JSON files to the output directory.",
+		&generateCommand{},
+	)
 	parser.AddCommand(
 		"fetch",
 		"Fetch check-ins from the Untappd API",
@@ -65,41 +95,4 @@ func main() {
 		}
 		os.Exit(1)
 	}
-
-	// A subcommand's Execute() already ran; nothing left to do.
-	if parser.Active != nil {
-		return
-	}
-
-	// No subcommand given – run the default generate flow.
-	if err := generate(); err != nil {
-		fmt.Fprintf(os.Stderr, "error: %v\n", err)
-		os.Exit(1)
-	}
-}
-
-func generate() error {
-	if err := os.MkdirAll(opts.Output, 0755); err != nil {
-		return err
-	}
-
-	if _, err := os.Stat(opts.Untappd); err != nil {
-		return fmt.Errorf("input path %q not found: %w", opts.Untappd, err)
-	}
-
-	db, err := parsing.LoadJsonIntoDatabase(opts.Untappd)
-	if err != nil {
-		return err
-	}
-
-	base, err := filepath.Abs(opts.Output)
-	if err != nil {
-		return err
-	}
-
-	if err := statistics.GenerateAndSave(db, base, opts.AllStyles); err != nil {
-		return err
-	}
-
-	return statistics.GenerateMonthlyAndSave(db, base)
 }
