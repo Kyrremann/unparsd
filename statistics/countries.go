@@ -68,8 +68,14 @@ func getISO3166Alpha2(country, state string) (string, string, error) {
 		case "Kalaallit Nunaat":
 			alpha2 = "GL"
 		}
-	case "England", "Northern Ireland", "Scotland", "Wales":
-		alpha2 = "GB"
+	case "England":
+		alpha2 = "GB-ENG"
+	case "Northern Ireland":
+		alpha2 = "GB-NIR"
+	case "Scotland":
+		alpha2 = "GB-SCT"
+	case "Wales":
+		alpha2 = "GB-WLS"
 	case "Finland":
 		switch state {
 		case "Åland":
