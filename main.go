@@ -50,7 +50,7 @@ func (p *generateCommand) Execute(_ []string) error {
 
 // fetchCommand implements the 'fetch' subcommand.
 type fetchCommand struct {
-	Username string `long:"username" description:"Untappd username to fetch check-ins for" required:"true"`
+	Username string `short:"u" long:"username" description:"Untappd username to fetch check-ins for" required:"true"`
 	Output   string `short:"o" long:"output" description:"Directory to write per-year JSON files into" default:"./checkins"`
 }
 
