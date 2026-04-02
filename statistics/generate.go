@@ -12,7 +12,7 @@ import (
 
 func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 	dataPath := filepath.Join(path, "_data")
-	if err := os.MkdirAll(dataPath, 0o755); err != nil {
+	if err := os.MkdirAll(dataPath, 0o750); err != nil {
 		return err
 	}
 
@@ -120,7 +120,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 
 func GenerateMonthlyAndSave(db *gorm.DB, path string) error {
 	monthlyPath := filepath.Join(path, "_monthly")
-	err := os.MkdirAll(monthlyPath, 0o755)
+	err := os.MkdirAll(monthlyPath, 0o750)
 	if err != nil {
 		return err
 	}
@@ -141,13 +141,18 @@ year: "{{ .Year }}"
 		return err
 	}
 	for _, y := range monthlyData {
+		// #nosec G304 -- path is constructed from a trusted base directory and a year string from the DB
 		output, err := os.Create(filepath.Join(monthlyPath, fmt.Sprintf("%v.html", y.Year)))
 		if err != nil {
 			return err
 		}
+
 		err = tmpl.Execute(output, y)
-		output.Close()
 		if err != nil {
+			return err
+		}
+
+		if err := output.Close(); err != nil {
 			return err
 		}
 	}

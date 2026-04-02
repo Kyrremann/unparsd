@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"log"
 	"os"
 	"os/signal"
 	"path/filepath"
@@ -22,7 +23,7 @@ type generateCommand struct {
 }
 
 func (p *generateCommand) Execute(_ []string) error {
-	if err := os.MkdirAll(p.Output, 0755); err != nil {
+	if err := os.MkdirAll(p.Output, 0o750); err != nil {
 		return err
 	}
 
@@ -73,20 +74,25 @@ func (f *fetchCommand) Execute(_ []string) error {
 
 func main() {
 	parser := flags.NewParser(nil, flags.Default)
-	parser.AddCommand(
+	if _, err := parser.AddCommand(
 		"generate",
 		"Generate statistics from a local check-in file",
 		"Reads a untappd.json export (or a directory of per-year JSON files) and\n"+
 			"writes statistics JSON files to the output directory.",
 		&generateCommand{},
-	)
-	parser.AddCommand(
+	); err != nil {
+		log.Fatalf("registering generate command: %v", err)
+	}
+
+	if _, err := parser.AddCommand(
 		"fetch",
 		"Fetch check-ins from the Untappd API",
 		"Downloads check-ins for a user and saves them as per-year JSON files.\n"+
 			"Reads credentials from UNTAPPD_CLIENT_ID and UNTAPPD_CLIENT_SECRET.",
 		&fetchCommand{},
-	)
+	); err != nil {
+		log.Fatalf("registering fetch command: %v", err)
+	}
 
 	_, err := parser.Parse()
 	if err != nil {

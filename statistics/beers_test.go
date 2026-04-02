@@ -15,7 +15,7 @@ func TestBeers(t *testing.T) {
 	assert.NoError(t, err)
 	assert.Len(t, beers, 112)
 
-	var checkins = 0
+	checkins := 0
 	for _, b := range beers {
 		checkins += b.Checkins
 	}

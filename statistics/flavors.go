@@ -28,7 +28,7 @@ func FlavorProfileStats(db *gorm.DB) ([]FlavorStat, error) {
 
 	freq := make(map[string]int)
 	for _, p := range profiles {
-		for _, tag := range strings.Split(p, ",") {
+		for tag := range strings.SplitSeq(p, ",") {
 			tag = strings.TrimSpace(tag)
 			if tag != "" {
 				freq[tag]++

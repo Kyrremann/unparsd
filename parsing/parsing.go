@@ -58,6 +58,7 @@ func OpenInMemoryDatabase() (*gorm.DB, error) {
 }
 
 func ReadFile(file string) ([]byte, error) {
+	// #nosec G304 -- callers supply trusted, user-specified file paths (CLI tool)
 	jsonFile, err := os.Open(file)
 	if err != nil {
 		return nil, err
@@ -76,7 +77,7 @@ func ReadFile(file string) ([]byte, error) {
 	return bytes, nil
 }
 
-func ParseJsonFile(file string, v interface{}) error {
+func ParseJsonFile(file string, v any) error {
 	bytes, err := ReadFile(file)
 	if err != nil {
 		return err
@@ -85,7 +86,7 @@ func ParseJsonFile(file string, v interface{}) error {
 	return UnmarshalJson(bytes, v)
 }
 
-func UnmarshalJson(bytes []byte, v interface{}) error {
+func UnmarshalJson(bytes []byte, v any) error {
 	return json.Unmarshal(bytes, v)
 }
 
@@ -174,7 +175,7 @@ func InsertIntoDatabase(jsonCheckin models.JSONCheckin, db *gorm.DB) error {
 	res := db.
 		Clauses(clause.OnConflict{
 			Columns: []clause.Column{{Name: "id"}},
-			DoUpdates: clause.Assignments(map[string]interface{}{
+			DoUpdates: clause.Assignments(map[string]any{
 				"photo_url":      dbCheckin.PhotoUrl,
 				"rating_score":   dbCheckin.RatingScore,
 				"comment":        dbCheckin.Comment,
@@ -198,12 +199,13 @@ func convertRatingScore(score any) float32 {
 	}
 }
 
-func SaveDataToJsonFile(v interface{}, fileName string) error {
+func SaveDataToJsonFile(v any, fileName string) error {
 	bytes, err := json.Marshal(v)
 	if err != nil {
 		return err
 	}
 
+	// #nosec G304 -- output path is constructed from a trusted base directory supplied by the caller
 	file, err := os.Create(fileName)
 	if err != nil {
 		return err

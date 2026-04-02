@@ -29,7 +29,7 @@ func TestBreweries(t *testing.T) {
 	sortedBeers := "En Sjakkmester Weissbier\nEplegløgg\nKaffekværna - 100g\nKaffekværna - 250g\nKaffekværna - Base\nKværna\nMer De Montagne\nRustikk Koriander\nSingle-hop Lucky Jack"
 	assert.Equal(t, sortedBeers, brewery.ListOfBeers)
 
-	var checkins = 0
+	checkins := 0
 	for _, b := range breweries {
 		checkins += b.Checkins
 	}
