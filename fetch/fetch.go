@@ -27,30 +27,29 @@ const (
 // Untappd API and saves them as per-year JSON files inside outputDir
 // (e.g. outputDir/2023.json, outputDir/2024.json).
 //
-// On subsequent runs it loads existing files first and only downloads
-// check-ins newer than the highest checkin_id already stored.
+// On subsequent runs it reads the latest stored checkin_id, then pages
+// backwards from today (newest-first) until it encounters that ID.
 //
 // If ctx is cancelled the function saves whatever has been fetched so far
 // and returns nil so that no data is lost.
 func FetchAndSave(ctx context.Context, username, clientID, clientSecret, outputDir string) error {
-	if err := os.MkdirAll(outputDir, 0755); err != nil {
+	if err := os.MkdirAll(outputDir, 0o750); err != nil {
 		return fmt.Errorf("creating output directory: %w", err)
 	}
 
-	// Load every check-in we already have on disk.
-	existing, err := loadExistingCheckins(outputDir)
+	latestID, err := loadLatestCheckinID(outputDir)
 	if err != nil {
-		return fmt.Errorf("loading existing check-ins: %w", err)
+		return fmt.Errorf("loading latest check-in ID: %w", err)
 	}
 
-	existingIDs := make(map[int]struct{}, len(existing))
-	for _, c := range existing {
-		existingIDs[c.CheckinID] = struct{}{}
+	if latestID > 0 {
+		log.Printf("Latest stored check-in ID: %d", latestID)
+	} else {
+		log.Println("No existing check-ins found; fetching all")
 	}
-	log.Printf("Found %d existing check-ins", len(existing))
 
-	// Fetch only check-ins that are not yet stored.
-	newCheckins, fetchErr := fetchAllNew(ctx, username, clientID, clientSecret, existingIDs)
+	// Fetch only check-ins newer than latestID.
+	newCheckins, fetchErr := fetchAllNew(ctx, username, clientID, clientSecret, latestID)
 
 	// On cancellation, partial results are still worth saving.
 	cancelled := errors.Is(fetchErr, context.Canceled) || errors.Is(fetchErr, context.DeadlineExceeded)
@@ -63,6 +62,7 @@ func FetchAndSave(ctx context.Context, username, clientID, clientSecret, outputD
 			log.Println("Fetch cancelled before any new check-ins were retrieved")
 			return nil
 		}
+
 		log.Println("No new check-ins found")
 		return nil
 	}
@@ -73,44 +73,74 @@ func FetchAndSave(ctx context.Context, username, clientID, clientSecret, outputD
 		log.Printf("Fetched %d new check-ins", len(newCheckins))
 	}
 
-	// Merge and split by year.
-	return saveByYear(append(existing, newCheckins...), outputDir)
+	return saveByYear(newCheckins, outputDir)
 }
 
-// loadExistingCheckins reads all *.json files from dir and returns the
-// merged slice of check-ins.  Missing directory is treated as empty.
-func loadExistingCheckins(dir string) ([]models.JSONCheckin, error) {
+// loadLatestCheckinID reads the first item from each *.json file in dir
+// (files are stored newest-first) and returns the highest checkin_id found.
+// Returns 0 if no files exist.
+func loadLatestCheckinID(dir string) (int, error) {
 	entries, err := os.ReadDir(dir)
 	if err != nil {
 		if os.IsNotExist(err) {
-			return nil, nil
+			return 0, nil
 		}
-		return nil, err
+
+		return 0, err
 	}
 
-	var all []models.JSONCheckin
+	latestID := 0
 	for _, entry := range entries {
 		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
 			continue
 		}
+
 		path := filepath.Join(dir, entry.Name())
-		var checkins []models.JSONCheckin
-		if err := parsing.ParseJsonFile(path, &checkins); err != nil {
-			return nil, fmt.Errorf("reading %s: %w", path, err)
+		id, err := readFirstCheckinID(path)
+		if err != nil {
+			return 0, fmt.Errorf("reading %s: %w", path, err)
 		}
-		all = append(all, checkins...)
+
+		if id > latestID {
+			latestID = id
+		}
 	}
-	return all, nil
+
+	return latestID, nil
 }
 
-// fetchAllNew pages through the API newest-first, stopping as soon as it
-// encounters a checkin_id that already exists in existingIDs.
-// On context cancellation it returns whatever it has collected so far along
-// with the context error so the caller can decide to save partial results.
-func fetchAllNew(ctx context.Context, username, clientID, clientSecret string, existingIDs map[int]struct{}) ([]models.JSONCheckin, error) {
+// readFirstCheckinID opens a JSON file containing a []JSONCheckin array and
+// decodes only the first element, returning its CheckinID.
+func readFirstCheckinID(path string) (int, error) {
+	// #nosec G304 -- path is constructed from outputDir provided by the caller (CLI flag)
+	f, err := os.Open(path)
+	if err != nil {
+		return 0, err
+	}
+	defer f.Close()
+
+	dec := json.NewDecoder(f)
+	// Consume the opening '['.
+	if _, err := dec.Token(); err != nil {
+		return 0, nil // empty or invalid file
+	}
+
+	var c models.JSONCheckin
+	if err := dec.Decode(&c); err != nil {
+		return 0, nil // empty array
+	}
+	return c.CheckinID, nil
+}
+
+// fetchAllNew pages backwards from the newest check-in, collecting every
+// item with CheckinID > latestID.  It stops as soon as it encounters an ID
+// that is already stored, or when a partial page signals no more history.
+//
+// On context cancellation it returns whatever it has collected so far.
+func fetchAllNew(ctx context.Context, username, clientID, clientSecret string, latestID int) ([]models.JSONCheckin, error) {
 	client := &http.Client{Timeout: 30 * time.Second}
 	var newCheckins []models.JSONCheckin
-	maxID := 0
+	cursor := 0 // 0 means start from the newest check-in (no max_id)
 
 	for {
 		// Check for cancellation before each page fetch.
@@ -118,8 +148,8 @@ func fetchAllNew(ctx context.Context, username, clientID, clientSecret string, e
 			return newCheckins, err
 		}
 
-		url := buildURL(username, clientID, clientSecret, maxID)
-		items, nextMaxID, err := fetchPage(ctx, client, url)
+		url := buildURL(username, clientID, clientSecret, cursor)
+		items, err := fetchPage(ctx, client, url)
 		if err != nil {
 			if errors.Is(err, context.Canceled) || errors.Is(err, context.DeadlineExceeded) {
 				return newCheckins, err
@@ -127,20 +157,33 @@ func fetchAllNew(ctx context.Context, username, clientID, clientSecret string, e
 			return nil, err
 		}
 
+		if len(items) == 0 {
+			break
+		}
+
+		// Walk the page (newest → oldest); stop at the first ID we already have.
 		done := false
 		for _, item := range items {
-			checkin := item.ToJSONCheckin()
-			if _, seen := existingIDs[checkin.CheckinID]; seen {
+			if item.CheckinID <= latestID {
 				done = true
 				break
 			}
-			newCheckins = append(newCheckins, checkin)
+
+			newCheckins = append(newCheckins, item.ToJSONCheckin())
 		}
 
-		if done || len(items) == 0 || nextMaxID == 0 {
+		if done {
 			break
 		}
-		maxID = nextMaxID
+
+		// A partial page means there is no more history.
+		if len(items) < pageLimit {
+			break
+		}
+
+		// Advance the cursor to the oldest item on this page so the next
+		// request returns the next batch going further back in time.
+		cursor = items[len(items)-1].CheckinID
 
 		// Brief pause between pages to be a good API citizen.
 		// Immediately interruptible on cancellation.
@@ -154,27 +197,33 @@ func fetchAllNew(ctx context.Context, username, clientID, clientSecret string, e
 	return newCheckins, nil
 }
 
-func buildURL(username, clientID, clientSecret string, maxID int) string {
+// buildURL constructs the API endpoint URL.
+// cursor (max_id) paginates backwards through history; 0 means start from
+// the newest check-in.
+func buildURL(username, clientID, clientSecret string, cursor int) string {
 	url := fmt.Sprintf(
 		"%s/user/checkins/%s?client_id=%s&client_secret=%s&limit=%d",
 		apiBaseURL, username, clientID, clientSecret, pageLimit,
 	)
-	if maxID > 0 {
-		url += fmt.Sprintf("&max_id=%d", maxID)
+
+	if cursor > 0 {
+		url += fmt.Sprintf("&max_id=%d", cursor)
 	}
+
 	return url
 }
 
-func fetchPage(ctx context.Context, client *http.Client, url string) ([]models.APICheckin, int, error) {
+func fetchPage(ctx context.Context, client *http.Client, url string) ([]models.APICheckin, error) {
 	req, err := http.NewRequestWithContext(ctx, http.MethodGet, url, nil)
 	if err != nil {
-		return nil, 0, err
+		return nil, err
 	}
+
 	req.Header.Set("User-Agent", "unparsd (github.com/kyrremann/unparsd)")
 
 	resp, err := client.Do(req)
 	if err != nil {
-		return nil, 0, fmt.Errorf("HTTP request failed: %w", err)
+		return nil, fmt.Errorf("HTTP request failed: %w", err)
 	}
 	defer resp.Body.Close()
 
@@ -185,7 +234,7 @@ func fetchPage(ctx context.Context, client *http.Client, url string) ([]models.A
 			log.Printf("Rate limit nearly exhausted (%d remaining), waiting 60s...", n)
 			select {
 			case <-ctx.Done():
-				return nil, 0, ctx.Err()
+				return nil, ctx.Err()
 			case <-time.After(60 * time.Second):
 			}
 		}
@@ -193,27 +242,19 @@ func fetchPage(ctx context.Context, client *http.Client, url string) ([]models.A
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return nil, 0, fmt.Errorf("reading response body: %w", err)
+		return nil, fmt.Errorf("reading response body: %w", err)
 	}
 
 	if resp.StatusCode != http.StatusOK {
-		return nil, 0, fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(body))
+		return nil, fmt.Errorf("API returned status %d: %s", resp.StatusCode, string(body))
 	}
 
 	var apiResp models.APIResponse
 	if err := json.Unmarshal(body, &apiResp); err != nil {
-		return nil, 0, fmt.Errorf("parsing API response: %w", err)
+		return nil, fmt.Errorf("parsing API response: %w", err)
 	}
 
-	items := apiResp.Response.Checkins.Items
-	nextMaxID := apiResp.Response.Checkins.Pagination.MaxID
-	// The Untappd API often returns max_id=0 in the pagination object.
-	// Derive the next page cursor from the oldest item in the current page
-	// instead (items are newest-first, so last item is oldest).
-	if nextMaxID == 0 && len(items) > 0 {
-		nextMaxID = items[len(items)-1].CheckinID
-	}
-	return items, nextMaxID, nil
+	return apiResp.Response.Checkins.Items, nil
 }
 
 // yearFromCheckin extracts the 4-digit year string from a check-in's
@@ -229,25 +270,36 @@ func yearFromCheckin(c models.JSONCheckin) string {
 	return strconv.Itoa(t.Year())
 }
 
-// saveByYear groups check-ins by year, sorts each group by checkin_id
-// descending (newest first), and writes one JSON file per year to outputDir.
-func saveByYear(checkins []models.JSONCheckin, outputDir string) error {
+// saveByYear groups new check-ins by year, then for each affected year loads
+// the existing file (if any), merges, sorts newest-first, and rewrites it.
+// Only the year files that actually receive new check-ins are touched.
+func saveByYear(newCheckins []models.JSONCheckin, outputDir string) error {
 	byYear := make(map[string][]models.JSONCheckin)
-	for _, c := range checkins {
+	for _, c := range newCheckins {
 		year := yearFromCheckin(c)
 		byYear[year] = append(byYear[year], c)
 	}
 
 	for year, ycheckins := range byYear {
-		sort.Slice(ycheckins, func(i, j int) bool {
-			return ycheckins[i].CheckinID > ycheckins[j].CheckinID
+		path := filepath.Join(outputDir, year+".json")
+
+		// Load the existing year file if it exists, then merge.
+		var existing []models.JSONCheckin
+		if _, err := os.Stat(path); err == nil {
+			if err := parsing.ParseJsonFile(path, &existing); err != nil {
+				return fmt.Errorf("reading %s: %w", path, err)
+			}
+		}
+
+		merged := append(existing, ycheckins...)
+		sort.Slice(merged, func(i, j int) bool {
+			return merged[i].CheckinID > merged[j].CheckinID
 		})
 
-		path := filepath.Join(outputDir, year+".json")
-		if err := parsing.SaveDataToJsonFile(ycheckins, path); err != nil {
+		if err := parsing.SaveDataToJsonFile(merged, path); err != nil {
 			return fmt.Errorf("writing %s: %w", path, err)
 		}
-		log.Printf("Wrote %d check-ins to %s", len(ycheckins), path)
+		log.Printf("Wrote %d check-ins to %s", len(merged), path)
 	}
 	return nil
 }

@@ -18,17 +18,17 @@ type APIMeta struct {
 }
 
 type APICheckinResponse struct {
-	Checkins APICheckinList `json:"checkins"`
+	Checkins   APICheckinList `json:"checkins"`
+	Pagination APIPagination  `json:"pagination"`
 }
 
 type APICheckinList struct {
-	Count      int           `json:"count"`
-	Items      []APICheckin  `json:"items"`
-	Pagination APIPagination `json:"pagination"`
+	Count int          `json:"count"`
+	Items []APICheckin `json:"items"`
 }
 
 type APIPagination struct {
-	MaxID int `json:"max_id"`
+	ID int `json:"max_id"`
 }
 
 // APICheckin is a single check-in item from the Untappd API response.
