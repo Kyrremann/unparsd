@@ -89,7 +89,7 @@ func testDatabaseModels(t *testing.T, db *gorm.DB) {
 }
 
 func TestParseJSON(t *testing.T) {
-	checkins, err := ParseJsonToCheckins("../fixture/untappd.json")
+	checkins, err := ParseJsonDirToCheckins("../fixture/checkins")
 	assert.NoError(t, err)
 
 	assert.Len(t, checkins, 126)
@@ -110,7 +110,7 @@ func testJsonImport(t *testing.T, checkin models.JSONCheckin) {
 }
 
 func TestParseJsonIntoDatabase(t *testing.T) {
-	checkins, err := ParseJsonToCheckins("../fixture/untappd.json")
+	checkins, err := ParseJsonDirToCheckins("../fixture/checkins")
 	assert.NoError(t, err)
 	testJsonImport(t, checkins[0])
 

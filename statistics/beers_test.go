@@ -8,7 +8,7 @@ import (
 )
 
 func TestBeers(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	beers, err := BeerStats(db)

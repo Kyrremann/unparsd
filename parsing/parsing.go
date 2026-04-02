@@ -15,23 +15,13 @@ import (
 	"gorm.io/gorm/clause"
 )
 
-func LoadJsonIntoDatabase(path string) (*gorm.DB, error) {
+func LoadJsonIntoDatabase(dir string) (*gorm.DB, error) {
 	db, err := OpenInMemoryDatabase()
 	if err != nil {
 		return nil, err
 	}
 
-	info, err := os.Stat(path)
-	if err != nil {
-		return nil, err
-	}
-
-	var checkins []models.JSONCheckin
-	if info.IsDir() {
-		checkins, err = ParseJsonDirToCheckins(path)
-	} else {
-		checkins, err = ParseJsonToCheckins(path)
-	}
+	checkins, err := ParseJsonDirToCheckins(dir)
 	if err != nil {
 		return nil, err
 	}
@@ -90,7 +80,7 @@ func UnmarshalJson(bytes []byte, v any) error {
 	return json.Unmarshal(bytes, v)
 }
 
-func ParseJsonToCheckins(file string) ([]models.JSONCheckin, error) {
+func parseJsonToCheckins(file string) ([]models.JSONCheckin, error) {
 	var checkins []models.JSONCheckin
 	err := ParseJsonFile(file, &checkins)
 	if err != nil {
@@ -113,7 +103,7 @@ func ParseJsonDirToCheckins(dir string) ([]models.JSONCheckin, error) {
 		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
 			continue
 		}
-		checkins, err := ParseJsonToCheckins(filepath.Join(dir, entry.Name()))
+		checkins, err := parseJsonToCheckins(filepath.Join(dir, entry.Name()))
 		if err != nil {
 			return nil, fmt.Errorf("reading %s: %w", entry.Name(), err)
 		}

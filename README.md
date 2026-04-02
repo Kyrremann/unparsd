@@ -5,15 +5,15 @@ A CLI tool that parses Untappd check-in data and generates JSON statistics for u
 
 ## Commands
 
-### `generate` — build statistics from a local file
+### `generate` — build statistics from check-in files
 
 ```
 unparsd generate [options]
 
-  -u, --untappd=<path>      Path to untappd.json export or a directory of
-                            per-year JSON files (default: untappd.json)
-  -o, --output=<dir>        Output directory for generated files (default: ./)
-  -s, --all-styles=<path>   Path to all-styles.json; omit to scrape Untappd live
+  -u, --untappd=<DIR>       Directory of per-year check-in JSON files
+                            (default: ./checkins)
+  -o, --output=<DIR>        Output directory for generated files (default: ./)
+  -s, --all-styles=<FILE>   Path to all-styles.json; omit to scrape Untappd live
 ```
 
 Reads check-in data and writes statistics to `<output>/_data/`:
@@ -59,9 +59,9 @@ Graceful shutdown: sending `SIGINT` or `SIGTERM` (Ctrl+C) saves any check-ins fe
 
 ## One-time historical import
 
-If you have an Untappd data export (`untappd.json`), split it into per-year files before running `generate` on the `checkins/` directory:
+If you have an Untappd data export (`untappd.json`), split it into per-year files first:
 
 ```
 python3 split_checkins.py untappd.json checkins/
-unparsd generate --untappd checkins/
+unparsd generate
 ```

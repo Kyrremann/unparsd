@@ -8,7 +8,7 @@ import (
 )
 
 func TestDayOfWeekStats(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	stats, err := DayOfWeekStats(db, "")
@@ -30,7 +30,7 @@ func TestDayOfWeekStats(t *testing.T) {
 }
 
 func TestCheckinStreak(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	streak, err := CheckinStreak(db, "")
@@ -44,7 +44,7 @@ func TestCheckinStreak(t *testing.T) {
 }
 
 func TestABVDistribution(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	buckets, err := ABVDistribution(db, "")
@@ -59,7 +59,7 @@ func TestABVDistribution(t *testing.T) {
 }
 
 func TestRatingDeltas(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	deltas, err := RatingDeltas(db)
@@ -85,7 +85,7 @@ func TestRatingDeltas(t *testing.T) {
 }
 
 func TestTopVenues(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	venues, err := TopVenues(db)
@@ -108,7 +108,7 @@ func TestTopVenues(t *testing.T) {
 }
 
 func TestServingTypeStats(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	stats, err := ServingTypeStats(db)
@@ -121,7 +121,7 @@ func TestServingTypeStats(t *testing.T) {
 }
 
 func TestFlavorProfileStats(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	stats, err := FlavorProfileStats(db)

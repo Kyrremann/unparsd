@@ -17,9 +17,9 @@ import (
 
 // generateCommand implements the 'generate' subcommand.
 type generateCommand struct {
-	Untappd   string `short:"u" long:"untappd" description:"Path to untappd.json file or directory of per-year JSON files" value-name:"untappd.json" default:"untappd.json"`
-	Output    string `short:"o" long:"output" description:"Output directory for generated statistics files" value-name:"_data" default:"./"`
-	AllStyles string `short:"s" long:"all-styles" description:"Path to all-styles.json; omit to scrape Untappd live" value-name:"all-styles.json"`
+	Untappd   string `short:"u" long:"untappd" description:"Directory of per-year check-in JSON files" value-name:"DIR" default:"./checkins"`
+	Output    string `short:"o" long:"output" description:"Output directory for generated statistics files" value-name:"DIR" default:"./"`
+	AllStyles string `short:"s" long:"all-styles" description:"Path to all-styles.json; omit to scrape Untappd live" value-name:"FILE"`
 }
 
 func (p *generateCommand) Execute(_ []string) error {
@@ -76,8 +76,8 @@ func main() {
 	parser := flags.NewParser(nil, flags.Default)
 	if _, err := parser.AddCommand(
 		"generate",
-		"Generate statistics from a local check-in file",
-		"Reads a untappd.json export (or a directory of per-year JSON files) and\n"+
+		"Generate statistics from per-year check-in files",
+		"Reads a directory of per-year JSON files (e.g. checkins/) and\n"+
 			"writes statistics JSON files to the output directory.",
 		&generateCommand{},
 	); err != nil {

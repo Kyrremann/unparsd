@@ -11,7 +11,7 @@ import (
 )
 
 func TestCountries(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	var brewery models.Brewery
@@ -30,7 +30,7 @@ func TestCountries(t *testing.T) {
 }
 
 func TestMissingCountries(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	missingCountries, err := MissingCountries(db)

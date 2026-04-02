@@ -8,7 +8,7 @@ import (
 )
 
 func TestDistinctStyles(t *testing.T) {
-	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
+	db, err := parsing.LoadJsonIntoDatabase("../fixture/checkins")
 	assert.NoError(t, err)
 
 	styles, err := DistinctStyles(db)
