@@ -128,14 +128,8 @@ func GenerateMonthlyAndSave(db *gorm.DB, path string) error {
 	view := `---
 layout: monthly
 banner: In {{ .Year}} I started drinking {{ .StartDay }}th of {{ .StartMonth }} and I managed to drink {{ .Checkins }} beers, averaging {{ .BeersPerDay }} beers a day
+year: "{{ .Year }}"
 ---
-
-{% for value in site.data.allmy.years['{{ .Year }}'].months %}
-  {% cycle 'add row' : '<div class="boxes-tables pure-g">', '', '' %}
-  {% include infoboxes.html data=value %}
-  {% cycle 'end row' : '', '', '</div>' %}
-{% endfor %}
-{% cycle 'end row' : '', '</div>', '</div>' %}
 `
 	tmpl, err := template.New("monthly").Parse(view)
 	if err != nil {
