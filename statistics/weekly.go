@@ -13,19 +13,23 @@ type DayOfWeekStat struct {
 
 // DayOfWeekStats returns check-in counts grouped by day of the week,
 // ordered Monday through Sunday.
-func DayOfWeekStats(db *gorm.DB) ([]DayOfWeekStat, error) {
+// Pass a non-empty year to restrict the calculation to that year only.
+func DayOfWeekStats(db *gorm.DB, year string) ([]DayOfWeekStat, error) {
 	// SQLite strftime('%w', …) returns 0=Sunday … 6=Saturday.
 	type row struct {
 		DayNum int `gorm:"column:day_num"`
 		Count  int `gorm:"column:count"`
 	}
 	var rows []row
-	res := db.
+	tx := db.
 		Table("checkins").
 		Select("CAST(strftime('%w', checkin_at) AS INTEGER) as day_num, count(*) as count").
 		Group("day_num").
-		Order("day_num ASC").
-		Find(&rows)
+		Order("day_num ASC")
+	if year != "" {
+		tx = tx.Where("strftime('%Y', checkin_at) = ?", year)
+	}
+	res := tx.Find(&rows)
 	if res.Error != nil {
 		return nil, res.Error
 	}

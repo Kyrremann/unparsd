@@ -27,26 +27,27 @@ type MostPerDay struct {
 }
 
 type PeriodStats struct {
-	Checkins              int           `json:"checkins"`
-	UniqueBreweries       int           `json:"unique_breweries"`
-	BreweryCountries      int           `json:"brewery_countries"`
-	UniqueVenues          int           `json:"unique_venues"`
-	VenueCountries        int           `json:"venue_countries"`
-	UniqueBeers           int           `json:"unique_beers"`
-	NewBeers              int           `json:"new_beers"`
-	MaxAbv                float64       `json:"max_abv"`
-	AvgAbv                float64       `json:"avg_abv"`
-	MaxIbu                int           `json:"max_ibu"`
-	Styles                int           `json:"styles"`
-	StartDate             string        `json:"start_date"`
-	Month                 string        `json:"month,omitempty"`
-	Year                  string        `json:"year"`
-	Months                []PeriodStats `gorm:"-" json:"months,omitempty"`
-	MostCheckinsPerDay    MostPerDay    `gorm:"-" json:"most_checkins_per_day"`
-	MostUniqueBeersPerDay MostPerDay    `gorm:"-" json:"most_unique_beers_per_day"`
-	BeersPerDay           float64       `gorm:"-" json:"beers_per_day"`
-	Streak                StreakStats   `gorm:"-" json:"streak"`
-	ABV                   []ABVBucket   `gorm:"-" json:"abv"`
+	Checkins              int             `json:"checkins"`
+	UniqueBreweries       int             `json:"unique_breweries"`
+	BreweryCountries      int             `json:"brewery_countries"`
+	UniqueVenues          int             `json:"unique_venues"`
+	VenueCountries        int             `json:"venue_countries"`
+	UniqueBeers           int             `json:"unique_beers"`
+	NewBeers              int             `json:"new_beers"`
+	MaxAbv                float64         `json:"max_abv"`
+	AvgAbv                float64         `json:"avg_abv"`
+	MaxIbu                int             `json:"max_ibu"`
+	Styles                int             `json:"styles"`
+	StartDate             string          `json:"start_date"`
+	Month                 string          `json:"month,omitempty"`
+	Year                  string          `json:"year"`
+	Months                []PeriodStats   `gorm:"-" json:"months,omitempty"`
+	MostCheckinsPerDay    MostPerDay      `gorm:"-" json:"most_checkins_per_day"`
+	MostUniqueBeersPerDay MostPerDay      `gorm:"-" json:"most_unique_beers_per_day"`
+	BeersPerDay           float64         `gorm:"-" json:"beers_per_day"`
+	Streak                StreakStats     `gorm:"-" json:"streak"`
+	ABV                   []ABVBucket     `gorm:"-" json:"abv"`
+	Weekly                []DayOfWeekStat `gorm:"-" json:"weekly"`
 }
 
 func getMonthAsString(month string) (string, error) {
@@ -213,6 +214,12 @@ func yearlyStats(db *gorm.DB) ([]PeriodStats, error) {
 			return nil, err
 		}
 		yearly[i].ABV = abv
+
+		weekly, err := DayOfWeekStats(db, ps.Year)
+		if err != nil {
+			return nil, err
+		}
+		yearly[i].Weekly = weekly
 	}
 
 	return yearly, nil
@@ -270,7 +277,7 @@ func AllMyStats(db *gorm.DB) (GlobalStats, error) {
 	}
 	globalStat.ABV = abv
 
-	weekly, err := DayOfWeekStats(db)
+	weekly, err := DayOfWeekStats(db, "")
 	if err != nil {
 		return GlobalStats{}, err
 	}

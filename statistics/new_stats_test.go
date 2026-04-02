@@ -11,7 +11,7 @@ func TestDayOfWeekStats(t *testing.T) {
 	db, err := parsing.LoadJsonIntoDatabase("../fixture/untappd.json")
 	assert.NoError(t, err)
 
-	stats, err := DayOfWeekStats(db)
+	stats, err := DayOfWeekStats(db, "")
 	assert.NoError(t, err)
 	assert.Len(t, stats, 7)
 
