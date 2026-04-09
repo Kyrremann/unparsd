@@ -30,6 +30,8 @@ func intersection(a, b []string) []string {
 	return c
 }
 
+var excludedPrefixes = []string{"Wine", "Non-Alcoholic", "RTD", "THC Drink", "Spirits"}
+
 func getStylesFromUntappd() (styles []string, err error) {
 	resp, err := http.Get("https://untappd.com/beer/top_rated")
 	if err != nil {
@@ -44,6 +46,7 @@ func getStylesFromUntappd() (styles []string, err error) {
 	if resp.StatusCode != 200 {
 		return nil, fmt.Errorf("status code error: %d %s", resp.StatusCode, resp.Status)
 	}
+
 	doc, err := goquery.NewDocumentFromReader(resp.Body)
 	if err != nil {
 		return nil, err
@@ -51,9 +54,17 @@ func getStylesFromUntappd() (styles []string, err error) {
 
 	doc.Find("select#filter_picker").Find("option").Each(func(i int, s *goquery.Selection) {
 		style := strings.TrimSpace(s.Text())
-		if style != "Show All Styles" {
-			styles = append(styles, style)
+		if style == "Show All Styles" {
+			return
 		}
+
+		lower := strings.ToLower(style)
+		for _, prefix := range excludedPrefixes {
+			if strings.HasPrefix(lower, strings.ToLower(prefix)) {
+				return
+			}
+		}
+		styles = append(styles, style)
 	})
 
 	return styles, nil
