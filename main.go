@@ -20,6 +20,7 @@ type generateCommand struct {
 	Untappd   string `short:"u" long:"untappd" description:"Directory of per-year check-in JSON files" value-name:"DIR" default:"./checkins"`
 	Output    string `short:"o" long:"output" description:"Output directory for generated statistics files" value-name:"DIR" default:"./"`
 	AllStyles string `short:"s" long:"all-styles" description:"Path to all-styles.json; omit to scrape Untappd live" value-name:"FILE"`
+	Username  string `short:"n" long:"username" description:"Namespace outputs under _data/<username>/ and _monthly/<username>/" value-name:"USERNAME"`
 }
 
 func (p *generateCommand) Execute(_ []string) error {
@@ -39,6 +40,13 @@ func (p *generateCommand) Execute(_ []string) error {
 	base, err := filepath.Abs(p.Output)
 	if err != nil {
 		return err
+	}
+
+	if p.Username != "" {
+		base = filepath.Join(base, p.Username)
+		if err := os.MkdirAll(base, 0o750); err != nil {
+			return err
+		}
 	}
 
 	if err := statistics.GenerateAndSave(db, base, p.AllStyles); err != nil {
