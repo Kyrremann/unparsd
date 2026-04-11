@@ -1,7 +1,7 @@
 package statistics
 
 import (
-	"github.com/kyrremann/unparsd/models"
+	"github.com/kyrremann/unparsd/v4/models"
 	"gorm.io/gorm"
 )
 

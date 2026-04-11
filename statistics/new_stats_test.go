@@ -3,7 +3,7 @@ package statistics
 import (
 	"testing"
 
-	"github.com/kyrremann/unparsd/parsing"
+	"github.com/kyrremann/unparsd/v4/parsing"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -6,7 +6,7 @@ import (
 	"strings"
 
 	"github.com/biter777/countries"
-	"github.com/kyrremann/unparsd/models"
+	"github.com/kyrremann/unparsd/v4/models"
 	"gorm.io/gorm"
 )
 

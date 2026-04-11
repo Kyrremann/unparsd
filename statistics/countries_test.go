@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/kyrremann/unparsd/models"
-	"github.com/kyrremann/unparsd/parsing"
+	"github.com/kyrremann/unparsd/v4/models"
+	"github.com/kyrremann/unparsd/v4/parsing"
 
 	"github.com/stretchr/testify/assert"
 )

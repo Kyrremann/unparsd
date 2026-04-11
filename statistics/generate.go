@@ -6,7 +6,7 @@ import (
 	"path/filepath"
 	"text/template"
 
-	"github.com/kyrremann/unparsd/parsing"
+	"github.com/kyrremann/unparsd/v4/parsing"
 	"gorm.io/gorm"
 )
 

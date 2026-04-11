@@ -3,7 +3,7 @@ package parsing
 import (
 	"testing"
 
-	"github.com/kyrremann/unparsd/models"
+	"github.com/kyrremann/unparsd/v4/models"
 
 	"github.com/stretchr/testify/assert"
 	"gorm.io/gorm"

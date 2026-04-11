@@ -10,9 +10,9 @@ import (
 	"syscall"
 
 	"github.com/jessevdk/go-flags"
-	"github.com/kyrremann/unparsd/fetch"
-	"github.com/kyrremann/unparsd/parsing"
-	"github.com/kyrremann/unparsd/statistics"
+	"github.com/kyrremann/unparsd/v4/fetch"
+	"github.com/kyrremann/unparsd/v4/parsing"
+	"github.com/kyrremann/unparsd/v4/statistics"
 )
 
 // generateCommand implements the 'generate' subcommand.

@@ -7,8 +7,8 @@ import (
 	"strings"
 
 	"github.com/PuerkitoBio/goquery"
-	"github.com/kyrremann/unparsd/models"
-	"github.com/kyrremann/unparsd/parsing"
+	"github.com/kyrremann/unparsd/v4/models"
+	"github.com/kyrremann/unparsd/v4/parsing"
 	"gorm.io/gorm"
 )
 

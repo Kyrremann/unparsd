@@ -1,4 +1,4 @@
-module github.com/kyrremann/unparsd
+module github.com/kyrremann/unparsd/v4
 
 go 1.26.1
 

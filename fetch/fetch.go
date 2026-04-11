@@ -14,8 +14,8 @@ import (
 	"strconv"
 	"time"
 
-	"github.com/kyrremann/unparsd/models"
-	"github.com/kyrremann/unparsd/parsing"
+	"github.com/kyrremann/unparsd/v4/models"
+	"github.com/kyrremann/unparsd/v4/parsing"
 )
 
 const (
