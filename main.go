@@ -42,18 +42,25 @@ func (p *generateCommand) Execute(_ []string) error {
 		return err
 	}
 
+	dataPath := filepath.Join(base, "_data")
+	monthlyPath := filepath.Join(base, "_monthly")
 	if p.Username != "" {
-		base = filepath.Join(base, p.Username)
-		if err := os.MkdirAll(base, 0o750); err != nil {
-			return err
-		}
+		dataPath = filepath.Join(dataPath, p.Username)
+		monthlyPath = filepath.Join(monthlyPath, p.Username)
 	}
 
-	if err := statistics.GenerateAndSave(db, base, p.AllStyles); err != nil {
+	if err := os.MkdirAll(dataPath, 0o750); err != nil {
+		return err
+	}
+	if err := os.MkdirAll(monthlyPath, 0o750); err != nil {
 		return err
 	}
 
-	return statistics.GenerateMonthlyAndSave(db, base)
+	if err := statistics.GenerateAndSave(db, dataPath, p.AllStyles); err != nil {
+		return err
+	}
+
+	return statistics.GenerateMonthlyAndSave(db, monthlyPath)
 }
 
 // fetchCommand implements the 'fetch' subcommand.
