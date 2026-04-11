@@ -113,7 +113,7 @@ func GenerateAndSave(db *gorm.DB, path, allStyles string) error {
 	return nil
 }
 
-func GenerateMonthlyAndSave(db *gorm.DB, path string) error {
+func GenerateMonthlyAndSave(db *gorm.DB, path, username string) error {
 	err := os.MkdirAll(path, 0o750)
 	if err != nil {
 		return err
@@ -122,6 +122,7 @@ func GenerateMonthlyAndSave(db *gorm.DB, path string) error {
 	view := `---
 layout: monthly
 banner: In {{ .Year}} I started drinking {{ .StartDay }}th of {{ .StartMonth }} and I managed to drink {{ .Checkins }} beers, averaging {{ .BeersPerDay }} beers a day
+username: "{{ .Username }}"
 year: "{{ .Year }}"
 ---
 `
@@ -134,6 +135,7 @@ year: "{{ .Year }}"
 	if err != nil {
 		return err
 	}
+
 	for _, y := range monthlyData {
 		// #nosec G304 -- path is constructed from a trusted base directory and a year string from the DB
 		output, err := os.Create(filepath.Join(path, fmt.Sprintf("%v.html", y.Year)))
@@ -141,6 +143,7 @@ year: "{{ .Year }}"
 			return err
 		}
 
+		y.Username = username
 		err = tmpl.Execute(output, y)
 		if err != nil {
 			return err

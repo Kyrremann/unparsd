@@ -60,7 +60,7 @@ func (p *generateCommand) Execute(_ []string) error {
 		return err
 	}
 
-	return statistics.GenerateMonthlyAndSave(db, monthlyPath)
+	return statistics.GenerateMonthlyAndSave(db, monthlyPath, p.Username)
 }
 
 // fetchCommand implements the 'fetch' subcommand.

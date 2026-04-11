@@ -9,6 +9,7 @@ import (
 )
 
 type Monthly struct {
+	Username    string
 	Checkins    int
 	StartDay    int
 	StartMonth  string
