@@ -122,7 +122,7 @@ func GenerateMonthlyAndSave(db *gorm.DB, path, username string) error {
 	view := `---
 layout: monthly
 banner: In {{ .Year}} I started drinking {{ .StartDay }}th of {{ .StartMonth }} and I managed to drink {{ .Checkins }} beers, averaging {{ .BeersPerDay }} beers a day
-username: "{{ .Username }}"
+user: "{{ .Username }}"
 year: "{{ .Year }}"
 ---
 `
