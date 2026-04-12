@@ -46,7 +46,7 @@ func (p *generateCommand) Execute(_ []string) error {
 	monthlyPath := filepath.Join(base, "_monthly")
 	if p.Username != "" {
 		dataPath = filepath.Join(dataPath, p.Username)
-		monthlyPath = filepath.Join(monthlyPath, p.Username)
+		monthlyPath = filepath.Join(base, p.Username, "monthly")
 	}
 
 	if err := os.MkdirAll(dataPath, 0o750); err != nil {
