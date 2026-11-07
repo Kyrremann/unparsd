@@ -10,8 +10,10 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"sort"
 	"strconv"
+	"strings"
 	"time"
 
 	"github.com/kyrremann/unparsd/v4/models"
@@ -89,29 +91,33 @@ func loadLatestCheckinID(dir string) (int, error) {
 		return 0, err
 	}
 
-	latestID := 0
+	var latestCheckinFile string
 	for _, entry := range entries {
 		if entry.IsDir() || filepath.Ext(entry.Name()) != ".json" {
 			continue
 		}
 
-		path := filepath.Join(dir, entry.Name())
-		id, err := readFirstCheckinID(path)
-		if err != nil {
-			return 0, fmt.Errorf("reading %s: %w", path, err)
+		if strings.Compare(latestCheckinFile, entry.Name()) < 0 {
+			latestCheckinFile = entry.Name()
 		}
+	}
 
-		if id > latestID {
-			latestID = id
-		}
+	if latestCheckinFile == "" {
+		return 0, fmt.Errorf("no checkin files found")
+	}
+
+	path := filepath.Join(dir, latestCheckinFile)
+	latestID, err := findLatestCheckinIDInFile(path)
+	if err != nil {
+		return 0, fmt.Errorf("reading %s: %w", path, err)
 	}
 
 	return latestID, nil
 }
 
-// readFirstCheckinID opens a JSON file containing a []JSONCheckin array and
+// findLatestCheckinIDInFile opens a JSON file containing a []JSONCheckin array and
 // decodes only the first element, returning its CheckinID.
-func readFirstCheckinID(path string) (int, error) {
+func findLatestCheckinIDInFile(path string) (int, error) {
 	// #nosec G304 -- path is constructed from outputDir provided by the caller (CLI flag)
 	f, err := os.Open(path)
 	if err != nil {
@@ -119,17 +125,20 @@ func readFirstCheckinID(path string) (int, error) {
 	}
 	defer f.Close()
 
-	dec := json.NewDecoder(f)
-	// Consume the opening '['.
-	if _, err := dec.Token(); err != nil {
-		return 0, nil // empty or invalid file
+	checkins := []models.JSONCheckin{}
+	if err := json.NewDecoder(f).Decode(&checkins); err != nil {
+		return 0, err
 	}
 
-	var c models.JSONCheckin
-	if err := dec.Decode(&c); err != nil {
-		return 0, nil // empty array
+	if len(checkins) == 0 {
+		return 0, fmt.Errorf("no checkins found in file")
 	}
-	return c.CheckinID, nil
+
+	slices.SortFunc(checkins, func(a, b models.JSONCheckin) int {
+		return strings.Compare(b.CheckinAt, a.CheckinAt)
+	})
+
+	return checkins[0].CheckinID, nil
 }
 
 // fetchAllNew pages backwards from the newest check-in, collecting every
