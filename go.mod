@@ -11,7 +11,7 @@ tool (
 )
 
 require (
-	github.com/PuerkitoBio/goquery v1.13.0
+	github.com/PuerkitoBio/goquery v1.14.0
 	github.com/biter777/countries v1.7.5
 	github.com/jessevdk/go-flags v1.6.1
 	github.com/stretchr/testify v1.12.1
